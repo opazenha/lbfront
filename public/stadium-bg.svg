@@ -1,0 +1,60 @@
+<svg width="1440" height="900" viewBox="0 0 1440 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dark background -->
+  <rect width="1440" height="900" fill="#0a0a0a"/>
+  
+  <!-- Stadium field -->
+  <rect x="220" y="200" width="1000" height="600" rx="300" fill="#0a0a0a" stroke="#222222" stroke-width="2"/>
+  
+  <!-- Center circle -->
+  <circle cx="720" cy="500" r="100" stroke="#222222" stroke-width="2" fill="none"/>
+  
+  <!-- Center line -->
+  <line x1="720" y1="200" x2="720" y2="800" stroke="#222222" stroke-width="2"/>
+  
+  <!-- Center dot -->
+  <circle cx="720" cy="500" r="5" fill="#222222"/>
+  
+  <!-- Penalty areas -->
+  <rect x="220" y="350" width="150" height="300" stroke="#222222" stroke-width="2" fill="none"/>
+  <rect x="1070" y="350" width="150" height="300" stroke="#222222" stroke-width="2" fill="none"/>
+  
+  <!-- Goal areas -->
+  <rect x="220" y="400" width="60" height="200" stroke="#222222" stroke-width="2" fill="none"/>
+  <rect x="1160" y="400" width="60" height="200" stroke="#222222" stroke-width="2" fill="none"/>
+  
+  <!-- Penalty spots -->
+  <circle cx="320" cy="500" r="3" fill="#222222"/>
+  <circle cx="1120" cy="500" r="3" fill="#222222"/>
+  
+  <!-- Corner arcs -->
+  <path d="M220,200 A10,10 0 0,1 230,210" stroke="#222222" stroke-width="2" fill="none"/>
+  <path d="M1220,200 A10,10 0 0,0 1210,210" stroke="#222222" stroke-width="2" fill="none"/>
+  <path d="M220,800 A10,10 0 0,0 230,790" stroke="#222222" stroke-width="2" fill="none"/>
+  <path d="M1220,800 A10,10 0 0,1 1210,790" stroke="#222222" stroke-width="2" fill="none"/>
+  
+  <!-- Stadium lights -->
+  <circle cx="200" cy="150" r="30" fill="none" stroke="#333333" stroke-width="1">
+    <animate attributeName="opacity" values="0.1;0.3;0.1" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="1240" cy="150" r="30" fill="none" stroke="#333333" stroke-width="1">
+    <animate attributeName="opacity" values="0.1;0.3;0.1" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="200" cy="750" r="30" fill="none" stroke="#333333" stroke-width="1">
+    <animate attributeName="opacity" values="0.1;0.3;0.1" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="1240" cy="750" r="30" fill="none" stroke="#333333" stroke-width="1">
+    <animate attributeName="opacity" values="0.1;0.3;0.1" dur="3.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Light beams -->
+  <polygon points="200,150 300,300 400,300 220,200" fill="#222222" opacity="0.05"/>
+  <polygon points="1240,150 1140,300 1040,300 1220,200" fill="#222222" opacity="0.05"/>
+  <polygon points="200,750 300,600 400,600 220,800" fill="#222222" opacity="0.05"/>
+  <polygon points="1240,750 1140,600 1040,600 1220,800" fill="#222222" opacity="0.05"/>
+  
+  <!-- Subtle grid pattern -->
+  <pattern id="smallGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#111111" stroke-width="0.5"/>
+  </pattern>
+  <rect width="1440" height="900" fill="url(#smallGrid)" opacity="0.3"/>
+</svg>
