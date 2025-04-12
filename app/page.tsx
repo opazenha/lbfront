@@ -127,26 +127,21 @@ export default function Home() {
     loadInitialData();
   }, []);
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (newFilters: Record<string, string>) => {
     setLoading(true);
     setError(null);
-
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    const newFilters: Record<string, string> = {};
     
-    // Convert FormData to filters object
-    formData.forEach((value, key) => {
-      if (value && typeof value === 'string' && value.trim() !== '') {
-        newFilters[key] = value.trim();
-      }
-    });
+    // Log the filters received from the PlayerFilter component
+    console.log('--- Form Submission ---');
+    console.log('Received filters:', newFilters);
     
+    // Update the filters state
     setFilters(newFilters);
     
     try {
+      console.log('Calling getPlayers with filters:', newFilters);
       const data = await getPlayers(newFilters);
+      console.log('Received player data:', data);
       setPlayers(data);
       
       // If we already know we're disconnected, check if API is now available
@@ -160,7 +155,10 @@ export default function Home() {
       }
       
       if (data.length === 0) {
+        console.log('No players found matching criteria');
         setError('No players found matching your criteria.');
+      } else {
+        console.log(`Found ${data.length} players after filtering`);
       }
     } catch (error) {
       console.error("Error fetching data:", error);

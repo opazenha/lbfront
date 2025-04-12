@@ -22,8 +22,7 @@ const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
     <div className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
       <div className="sidebar-header">
         <div className="logo-container">
-          <Logo size={40} />
-          {isOpen && <span className="logo-text">LB Sports</span>}
+          <Logo size={isOpen ? 40 : 30} />
         </div>
         <button className="toggle-btn" onClick={toggleSidebar}>
           {isOpen ? '←' : '→'}
@@ -71,23 +70,18 @@ const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
           align-items: center;
           justify-content: space-between;
           border-bottom: 1px solid #222;
+          height: 70px;
         }
         
         .logo-container {
           display: flex;
           align-items: center;
+          justify-content: center;
+          flex: 1;
         }
         
         .logo {
           object-fit: contain;
-        }
-        
-        .logo-text {
-          margin-left: 12px;
-          font-weight: bold;
-          color: #f0c14b;
-          font-size: 18px;
-          white-space: nowrap;
         }
         
         .toggle-btn {

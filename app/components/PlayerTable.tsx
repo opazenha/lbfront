@@ -1,8 +1,8 @@
 "use client";
 
-import React from 'react';
-import Image from 'next/image';
-import { Player as PlayerType } from '../services/playerService';
+import Image from "next/image";
+import React, { useState } from "react";
+import { Player as PlayerType } from "../services/playerService";
 
 // This interface is now redundant as we're using the imported type
 interface LocalPlayer {
@@ -22,6 +22,57 @@ interface PlayerTableProps {
 }
 
 const PlayerTable = ({ players, loading }: PlayerTableProps) => {
+  // State for sorting
+  const [sortField, setSortField] = useState<keyof PlayerType>("name");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+
+  // Function to handle sorting
+  const handleSort = (field: keyof PlayerType) => {
+    if (sortField === field) {
+      // If clicking the same field, toggle direction
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      // If clicking a new field, set it as the sort field and default to ascending
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  // Function to get the sorted players
+  const getSortedPlayers = () => {
+    return [...players].sort((a, b) => {
+      // Get values for comparison
+      const valueA = a[sortField];
+      const valueB = b[sortField];
+
+      // Handle different data types
+      if (typeof valueA === "number" && typeof valueB === "number") {
+        // For numeric values (like age)
+        return sortDirection === "asc" ? valueA - valueB : valueB - valueA;
+      } else if (typeof valueA === "string" && typeof valueB === "string") {
+        // For string values (like name, position, nationality, club)
+        return sortDirection === "asc"
+          ? valueA.localeCompare(valueB)
+          : valueB.localeCompare(valueA);
+      } else if (typeof valueA === "boolean" && typeof valueB === "boolean") {
+        // For boolean values (like isLbPlayer)
+        return sortDirection === "asc"
+          ? (valueA ? 1 : 0) - (valueB ? 1 : 0)
+          : (valueB ? 1 : 0) - (valueA ? 1 : 0);
+      }
+
+      // Default case
+      return 0;
+    });
+  };
+
+  // Function to render sort indicator
+  const renderSortIndicator = (field: keyof PlayerType) => {
+    if (sortField === field) {
+      return sortDirection === "asc" ? " ↑" : " ↓";
+    }
+    return "";
+  };
   if (loading) {
     return (
       <div className="loading-container">
@@ -44,26 +95,50 @@ const PlayerTable = ({ players, loading }: PlayerTableProps) => {
       <table className="player-table">
         <thead>
           <tr>
-            <th>Player</th>
-            <th>Age</th>
-            <th>Position</th>
-            <th>Nationality</th>
-            <th>Club</th>
-            <th>Market Value</th>
+            <th onClick={() => handleSort("name")} className="sortable-header">
+              Player{renderSortIndicator("name")}
+            </th>
+            <th onClick={() => handleSort("age")} className="sortable-header">
+              Age{renderSortIndicator("age")}
+            </th>
+            <th
+              onClick={() => handleSort("position")}
+              className="sortable-header"
+            >
+              Position{renderSortIndicator("position")}
+            </th>
+            <th
+              onClick={() => handleSort("nationality")}
+              className="sortable-header"
+            >
+              Nationality{renderSortIndicator("nationality")}
+            </th>
+            <th onClick={() => handleSort("club")} className="sortable-header">
+              Club{renderSortIndicator("club")}
+            </th>
+            <th
+              onClick={() => handleSort("marketValue")}
+              className="sortable-header"
+            >
+              Market Value{renderSortIndicator("marketValue")}
+            </th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {players.map((player) => (
-            <tr key={player.id} className={player.isLbPlayer ? 'lb-player-row' : ''}>
+          {getSortedPlayers().map((player) => (
+            <tr
+              key={player.id}
+              className={player.isLbPlayer ? "lb-player-row" : ""}
+            >
               <td className="player-cell">
                 <div className="player-info">
                   {player.imageUrl ? (
-                    <Image 
-                      src={player.imageUrl} 
-                      alt={player.name} 
-                      width={40} 
-                      height={40} 
+                    <Image
+                      src={player.imageUrl}
+                      alt={player.name}
+                      width={40}
+                      height={40}
                       className="player-image"
                     />
                   ) : (
@@ -80,7 +155,7 @@ const PlayerTable = ({ players, loading }: PlayerTableProps) => {
               <td>{player.age}</td>
               <td>{player.position}</td>
               <td>{player.nationality}</td>
-              <td>{player.club || 'N/A'}</td>
+              <td>{player.club || "N/A"}</td>
               <td className="market-value">{player.marketValue}</td>
               <td>
                 <div className="action-buttons">
@@ -100,13 +175,13 @@ const PlayerTable = ({ players, loading }: PlayerTableProps) => {
           overflow: hidden;
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
         .player-table {
           width: 100%;
           border-collapse: collapse;
           text-align: left;
         }
-        
+
         th {
           background-color: #1a1a1a;
           color: #f0c14b;
@@ -115,37 +190,48 @@ const PlayerTable = ({ players, loading }: PlayerTableProps) => {
           font-weight: 600;
           border-bottom: 1px solid #333;
         }
-        
+
+        .sortable-header {
+          cursor: pointer;
+          user-select: none;
+          transition: background-color 0.2s;
+          position: relative;
+        }
+
+        .sortable-header:hover {
+          background-color: #333;
+        }
+
         td {
           padding: 12px 16px;
           border-bottom: 1px solid #222;
           color: #ededed;
           font-size: 14px;
         }
-        
+
         tr:last-child td {
           border-bottom: none;
         }
-        
+
         tr:hover {
           background-color: #1a1a1a;
         }
-        
+
         .player-cell {
           min-width: 200px;
         }
-        
+
         .player-info {
           display: flex;
           align-items: center;
         }
-        
+
         .player-image {
           border-radius: 50%;
           object-fit: cover;
           margin-right: 12px;
         }
-        
+
         .player-image-placeholder {
           width: 40px;
           height: 40px;
@@ -159,14 +245,14 @@ const PlayerTable = ({ players, loading }: PlayerTableProps) => {
           font-weight: bold;
           font-size: 16px;
         }
-        
+
         .player-name {
           font-weight: 500;
           display: flex;
           align-items: center;
           gap: 8px;
         }
-        
+
         .lb-badge {
           background-color: #f0c14b;
           color: #0a0a0a;
@@ -175,21 +261,21 @@ const PlayerTable = ({ players, loading }: PlayerTableProps) => {
           border-radius: 3px;
           font-weight: bold;
         }
-        
+
         .lb-player-row {
           background-color: rgba(240, 193, 75, 0.05);
         }
-        
+
         .market-value {
           font-weight: 600;
           color: #f0c14b;
         }
-        
+
         .action-buttons {
           display: flex;
           gap: 8px;
         }
-        
+
         button {
           padding: 6px 12px;
           border-radius: 4px;
@@ -197,27 +283,27 @@ const PlayerTable = ({ players, loading }: PlayerTableProps) => {
           cursor: pointer;
           transition: background-color 0.2s;
         }
-        
+
         .view-btn {
           background-color: #1a1a1a;
           border: 1px solid #333;
           color: #ededed;
         }
-        
+
         .view-btn:hover {
           background-color: #222;
         }
-        
+
         .edit-btn {
           background-color: #f0c14b;
           border: none;
           color: #0a0a0a;
         }
-        
+
         .edit-btn:hover {
           background-color: #e0b13b;
         }
-        
+
         .loading-container {
           display: flex;
           flex-direction: column;
@@ -230,7 +316,7 @@ const PlayerTable = ({ players, loading }: PlayerTableProps) => {
           height: 300px;
           gap: 16px;
         }
-        
+
         .loading-spinner {
           width: 40px;
           height: 40px;
@@ -240,11 +326,13 @@ const PlayerTable = ({ players, loading }: PlayerTableProps) => {
           animation: spin 1s ease-in-out infinite;
           margin-bottom: 16px;
         }
-        
+
         @keyframes spin {
-          to { transform: rotate(360deg); }
+          to {
+            transform: rotate(360deg);
+          }
         }
-        
+
         .empty-state {
           padding: 40px;
           text-align: center;

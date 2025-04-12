@@ -14,7 +14,16 @@ export async function GET(request: Request) {
     
     // Build the target URL with any query parameters
     let targetUrl = API_URL;
-    if (searchParams.toString()) {
+    
+    // Handle position filtering specifically
+    const position = searchParams.get('position');
+    if (position) {
+      // If we have a position parameter, use the position endpoint
+      targetUrl = `${API_URL}/position?positionId=${position}`;
+      console.log(`Proxying to position endpoint: ${targetUrl}`);
+    } 
+    // Handle other query parameters
+    else if (searchParams.toString()) {
       targetUrl += `?${searchParams.toString()}`;
     }
     
