@@ -57,7 +57,7 @@ export interface Player {
   name: string;
   age: number;
   position: string;
-  positionId?: number; // Add position ID for filtering
+
   nationality: string;
   club?: string;
   marketValue: string; // Formatted string for display (e.g., €2.00m)
@@ -66,33 +66,12 @@ export interface Player {
   isLbPlayer?: boolean;
 }
 
-// Position mapping based on MongoDB position IDs
-const positionMap: Record<number, string> = {
-  1: "Goalkeeper",
-  2: "Right-Back",
-  3: "Center-Back",
-  4: "Left-Back",
-  5: "Sweeper",
-  6: "Defensive Midfielder",
-  7: "Central Midfielder",
-  8: "Attacking Midfielder",
-  9: "Right Midfielder",
-  10: "Offensive Midfielder",
-  11: "Left Winger",
-  12: "Right Winger",
-  13: "Second Striker",
-  14: "Center-Forward",
-};
-
 // Transform player profile data from the cache endpoint to our internal Player interface
 const transformPlayerProfileFromCache = (data: any): Player => {
   // Handle the player profile structure from the cache endpoint
 
   // Get primary position from the position object
   const positionMain = data.position?.main || "Unknown";
-
-  // Map position to our positionId for backward compatibility
-  const positionId = getPositionIdFromName(positionMain);
 
   // Get the formatted market value string from API (e.g., "€450k", "€2.00m")
   const marketValueString = data.marketValue || "Unknown";
@@ -114,7 +93,7 @@ const transformPlayerProfileFromCache = (data: any): Player => {
     name: data.name,
     age: data.age || 0,
     position: positionMain,
-    positionId: positionId,
+
     nationality: nationality,
     club: club,
     marketValue: marketValueString, // Keep the original formatted string for display
@@ -163,35 +142,6 @@ const parseMarketValue = (
   return numericValue * multiplier;
 };
 
-// Helper function to get position ID from position name
-const getPositionIdFromName = (positionName: string): number => {
-  // Reverse lookup in the position map
-  for (const [id, name] of Object.entries(positionMap)) {
-    if (name.toLowerCase() === positionName.toLowerCase()) {
-      return parseInt(id, 10);
-    }
-  }
-
-  // If not found, try to match partial names
-  const lowerName = positionName.toLowerCase();
-  if (
-    lowerName.includes("forward") ||
-    lowerName.includes("striker") ||
-    lowerName.includes("winger")
-  ) {
-    return 1; // Forward
-  } else if (lowerName.includes("midfield")) {
-    return 2; // Midfielder
-  } else if (lowerName.includes("defend") || lowerName.includes("back")) {
-    return 3; // Defender
-  } else if (lowerName.includes("keeper") || lowerName.includes("goalie")) {
-    return 4; // Goalkeeper
-  }
-
-  // Default
-  return 0;
-};
-
 // Mock data for fallback when API is unavailable
 const mockPlayers: Player[] = [
   {
@@ -199,7 +149,6 @@ const mockPlayers: Player[] = [
     name: "Romarinho",
     age: 34,
     position: "Right Winger",
-    positionId: 12,
     nationality: "Brazilian",
     club: "Fenerbahçe",
     marketValue: "€12.5M",
@@ -210,7 +159,6 @@ const mockPlayers: Player[] = [
     name: "Uilton",
     age: 32,
     position: "Right Winger",
-    positionId: 12,
     nationality: "Brazilian",
     club: "FC Porto",
     marketValue: "€8.2M",
@@ -220,7 +168,6 @@ const mockPlayers: Player[] = [
     name: "Tiago Orobó",
     age: 31,
     position: "Center-Forward",
-    positionId: 14,
     nationality: "Brazilian",
     club: "Barcelona",
     marketValue: "€15.7M",
@@ -231,7 +178,6 @@ const mockPlayers: Player[] = [
     name: "Buller",
     age: 30,
     position: "Left Winger",
-    positionId: 11,
     nationality: "Brazilian",
     club: "Manchester United",
     marketValue: "€7.3M",
@@ -241,7 +187,6 @@ const mockPlayers: Player[] = [
     name: "Farley Rosa",
     age: 31,
     position: "Left Winger",
-    positionId: 11,
     nationality: "Brazilian / Portuguese",
     club: "FC Porto",
     marketValue: "€9.1M",
@@ -252,7 +197,6 @@ const mockPlayers: Player[] = [
     name: "Lucas Rocha",
     age: 29,
     position: "Center-Back",
-    positionId: 3,
     nationality: "Brazilian",
     club: "AC Milan",
     marketValue: "€11.8M",
@@ -262,7 +206,6 @@ const mockPlayers: Player[] = [
     name: "Paulo Henrique",
     age: 26,
     position: "Defensive Midfielder",
-    positionId: 6,
     nationality: "Brazilian",
     club: "Juventus",
     marketValue: "€14.2M",
@@ -391,7 +334,7 @@ export const getPlayers = async (filters: any = {}): Promise<Player[]> => {
         id: p.id,
         name: p.name,
         position: p.position,
-        positionId: p.positionId,
+
         nationality: p.nationality,
         club: p.club,
         marketValue: p.marketValue,
@@ -400,20 +343,11 @@ export const getPlayers = async (filters: any = {}): Promise<Player[]> => {
     );
 
     // Apply additional client-side filtering if needed
-    // Position filtering should already be handled by the API, but let's double-check
+    // Position filtering
     if (filters.position && players.length > 0) {
-      const positionId = parseInt(filters.position, 10);
-      console.log(`Double-checking position filter for ID: ${positionId}`);
-
-      // Log position IDs of returned players
-      const positionIds = players.map((p: Player) => p.positionId);
-      console.log(
-        `Position IDs in returned players: ${positionIds.join(", ")}`
-      );
-
-      // Filter again on client side if needed
+      console.log(`Filtering by position: ${filters.position}`);
       players = players.filter(
-        (player: Player) => player.positionId === positionId
+        (player: Player) => player.position === filters.position
       );
       console.log(
         `After client-side position filtering: ${players.length} players`

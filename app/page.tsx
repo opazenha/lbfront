@@ -20,6 +20,9 @@ export default function Home() {
   // Players currently displayed (subset of filtered players)
   const [displayedPlayers, setDisplayedPlayers] = useState<Player[]>([]);
 
+  // Available positions from all players
+  const [availablePositions, setAvailablePositions] = useState<string[]>([]);
+
   // Number of players to show per page
   const PLAYERS_PER_PAGE = 50;
 
@@ -47,6 +50,11 @@ export default function Home() {
         setAllPlayers(data);
         setFilteredPlayers([]);
         setDisplayedPlayers([]);
+
+        // Get unique positions from players
+        const positions = Array.from(new Set(data.map(player => player.position)));
+        positions.sort(); // Sort alphabetically
+        setAvailablePositions(positions);
 
         // Check if the API is available
         const isApiAvailable = await checkApiAvailability();
@@ -86,7 +94,7 @@ export default function Home() {
 
     if (filters.position) {
       filtered = filtered.filter(
-        (player) => player.positionId === parseInt(filters.position)
+        (player) => player.position === filters.position
       );
     }
 
@@ -106,6 +114,20 @@ export default function Home() {
 
     if (filters.isLbPlayer === "true") {
       filtered = filtered.filter((player) => player.isLbPlayer === true);
+    }
+
+    // Apply age filters if present
+    const minAge = filters.minAge ? parseInt(filters.minAge, 10) : undefined;
+    const maxAge = filters.maxAge ? parseInt(filters.maxAge, 10) : undefined;
+
+    if (minAge !== undefined || maxAge !== undefined) {
+      filtered = filtered.filter((player) => {
+        const age = typeof player.age === 'string' ? parseInt(player.age, 10) : player.age;
+        if (typeof age !== 'number' || isNaN(age)) return false;
+        const meetsMin = minAge === undefined || isNaN(minAge) || age >= minAge;
+        const meetsMax = maxAge === undefined || isNaN(maxAge) || age <= maxAge;
+        return meetsMin && meetsMax;
+      });
     }
 
     // Apply market value filter if present
@@ -208,7 +230,7 @@ export default function Home() {
           </div>
         </div>
 
-        <PlayerFilter onSubmit={handleSubmit} loading={loading} />
+        <PlayerFilter onSubmit={handleSubmit} loading={loading} availablePositions={availablePositions} />
 
         {error && (
           <div className="error-message">

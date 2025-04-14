@@ -5,9 +5,10 @@ import React, { FormEvent, useState } from "react";
 interface PlayerFilterProps {
   onSubmit: (filters: Record<string, string>) => void;
   loading: boolean;
+  availablePositions?: string[];
 }
 
-const PlayerFilter = ({ onSubmit, loading }: PlayerFilterProps) => {
+const PlayerFilter = ({ onSubmit, loading, availablePositions = [] }: PlayerFilterProps) => {
   const [name, setName] = useState('');
   const [position, setPosition] = useState('');
   const [nationality, setNationality] = useState('');
@@ -47,23 +48,7 @@ const PlayerFilter = ({ onSubmit, loading }: PlayerFilterProps) => {
     // Call the parent's onSubmit with the filters
     onSubmit(filters);
   };
-  // Position IDs from MongoDB
-  const positions = [
-    { id: 1, name: "Goalkeeper" },
-    { id: 2, name: "Right-Back" },
-    { id: 3, name: "Center-Back" },
-    { id: 4, name: "Left-Back" },
-    { id: 5, name: "Sweeper" },
-    { id: 6, name: "Defensive Midfielder" },
-    { id: 7, name: "Central Midfielder" },
-    { id: 8, name: "Attacking Midfielder" },
-    { id: 9, name: "Right Midfielder" },
-    { id: 10, name: "Offensive Midfielder" },
-    { id: 11, name: "Left Winger" },
-    { id: 12, name: "Right Winger" },
-    { id: 13, name: "Second Striker" },
-    { id: 14, name: "Center-Forward" },
-  ];
+
 
   return (
     <div className="filter-container">
@@ -117,13 +102,12 @@ const PlayerFilter = ({ onSubmit, loading }: PlayerFilterProps) => {
               }}
             >
               <option value="">All Positions</option>
-              {positions.map((pos) => (
+              {availablePositions.map((position) => (
                 <option 
-                  key={pos.id} 
-                  value={pos.id.toString()}
-                  data-position-name={pos.name}
+                  key={position} 
+                  value={position}
                 >
-                  {pos.name}
+                  {position}
                 </option>
               ))}
             </select>
