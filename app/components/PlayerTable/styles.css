@@ -1,0 +1,171 @@
+.player-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin-top: 20px;
+}
+
+.player-table th,
+.player-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.player-table th {
+  background: #27272a;
+  font-weight: 600;
+  color: #ffc107;
+  cursor: pointer;
+}
+
+.player-table th:hover {
+  background: #323237;
+}
+
+.sort-indicator {
+  margin-left: 5px;
+  display: inline-block;
+}
+
+.player-table tr:last-child td {
+  border-bottom: none;
+}
+
+.player-table tbody tr {
+  transition: background-color 0.2s;
+}
+
+.player-table tbody tr:hover {
+  background: #2a2a2d;
+}
+
+/* LB Player highlight */
+.player-table .lb-player {
+  background: rgba(255, 193, 7, 0.05);
+}
+
+.player-table .lb-player:hover {
+  background: rgba(255, 193, 7, 0.1);
+}
+
+.player-table .lb-badge {
+  background: #ffc107;
+  color: #000;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  display: inline-block;
+  margin-left: 6px;
+}
+
+.market-value {
+  font-family: monospace;
+  color: #ffc107;
+  font-weight: 500;
+}
+
+.player-name {
+  font-weight: 500;
+  color: #fff;
+  display: flex;
+  align-items: center;
+}
+
+.player-image {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  margin-right: 12px;
+  object-fit: cover;
+  background-color: #3a3a3d;
+}
+
+.player-image-placeholder {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  margin-right: 12px;
+  background-color: #3a3a3d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #fff;
+  font-size: 14px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.action-button {
+  background: #3a3a3d;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.action-button:hover {
+  background: #4a4a4d;
+}
+
+.action-button.edit {
+  background: #2c2c60;
+}
+
+.action-button.edit:hover {
+  background: #3c3c70;
+}
+
+.action-button.view {
+  background: #2c602c;
+}
+
+.action-button.view:hover {
+  background: #3c703c;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: #a0a0a7;
+  background: #27272a;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: #a0a0a7;
+  background: #27272a;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid #3a3a3d;
+  border-radius: 50%;
+  border-top-color: #ffc107;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

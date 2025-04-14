@@ -1,9 +1,9 @@
 // API Configuration for the application
 // This file centralizes all API configuration to make it easy to switch between environments
 
-// Default API base URL - Using Next.js proxy rewrite path
-// Always use localhost:3000 in development for consistency
-const API_BASE_URL = 'http://localhost:3000/api-proxy';
+// Default API base URL - Using Next.js API routes to avoid CORS issues
+// These routes are defined in app/api/ and proxy requests to the Transfermarkt API
+const API_BASE_URL = '/api';
 
 // Allow for fallback to mock data if API is unavailable
 const USE_MOCK_DATA_IF_API_DOWN = process.env.NEXT_PUBLIC_USE_MOCK_IF_API_DOWN !== 'false';

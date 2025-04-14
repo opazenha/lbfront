@@ -4,11 +4,8 @@ import { FormEvent, useEffect, useState } from "react";
 import MainLayout from "./components/MainLayout";
 import PlayerFilter from "./components/PlayerFilter";
 import PlayerTable from "./components/PlayerTable";
-import {
-  checkApiAvailability,
-  getPlayers,
-  Player,
-} from "./services/playerService";
+import { Player } from "./services/player/types";
+import { checkApiAvailability, getPlayers } from "./services/player/api";
 
 export default function Home() {
   // All players fetched from API
@@ -42,36 +39,62 @@ export default function Home() {
   // Load initial data on component mount
   useEffect(() => {
     const loadInitialData = async () => {
+      console.log("=== STARTING INITIAL DATA LOAD ===");
       setLoading(true);
       setApiStatus("checking");
       try {
         // Fetch all players but don't display them yet
+        console.log("Calling getPlayers() to fetch player data...");
         const data = await getPlayers();
+        console.log(`Received ${data?.length || 0} players from getPlayers():`);
+        if (data?.length > 0) {
+          console.log("First player sample:", JSON.stringify(data[0], null, 2));
+        } else {
+          console.log("No players received from getPlayers()");
+        }
+        
         setAllPlayers(data);
-        setFilteredPlayers([]);
-        setDisplayedPlayers([]);
+        console.log("Set allPlayers state with data");
+        
+        // Set filtered and displayed players to show all players initially
+        setFilteredPlayers(data);
+        setDisplayedPlayers(data.slice(0, PLAYERS_PER_PAGE));
+        console.log(`Displaying initial ${Math.min(data.length, PLAYERS_PER_PAGE)} players out of ${data.length}`);
+        
+        // Mark that a search has been performed so the table is displayed
+        setHasSearched(true);
 
         // Get unique positions from players
-        const positions = Array.from(new Set(data.map(player => player.position)));
+        console.log("Extracting unique positions from player data...");
+        const positions = Array.from(new Set(data.map(player => {
+          console.log(`Player ${player.name} position: ${player.position}`);
+          return player.position;
+        })));
         positions.sort(); // Sort alphabetically
+        console.log(`Found ${positions.length} unique positions:`, positions);
         setAvailablePositions(positions);
 
         // Check if the API is available
+        console.log("Checking API availability...");
         const isApiAvailable = await checkApiAvailability();
+        console.log(`API availability check result: ${isApiAvailable ? 'Connected' : 'Disconnected'}`);
 
         if (isApiAvailable) {
           setApiStatus("connected");
           setError(null);
+          console.log("API status set to connected");
         } else {
           setApiStatus("disconnected");
           setError(
             "Unable to connect to the LB Sports API. Using mock data instead."
           );
+          console.log("API status set to disconnected, using mock data");
         }
       } catch (err) {
         console.error("Error loading initial data:", err);
         setApiStatus("disconnected");
         setError("Failed to load player data. Please try again.");
+        console.log("Error caught in loadInitialData, set status to disconnected");
       } finally {
         setLoading(false);
       }
@@ -82,38 +105,76 @@ export default function Home() {
 
   // Function to apply filters and update displayed players
   const applyFilters = (filters: Record<string, string>) => {
+    console.log("=== APPLYING FILTERS ===");
+    console.log("Starting with all players:", allPlayers.length);
+    console.log("Filter criteria:", filters);
+    
     let filtered = [...allPlayers];
+    console.log("Initial filtered array length:", filtered.length);
 
     // Apply each filter
     if (filters.name) {
       const searchName = filters.name.toLowerCase();
-      filtered = filtered.filter((player) =>
-        player.name.toLowerCase().includes(searchName)
-      );
+      console.log(`Applying name filter: '${searchName}'`);
+      filtered = filtered.filter((player) => {
+        const nameMatch = player.name.toLowerCase().includes(searchName);
+        if (!nameMatch) {
+          console.log(`Player rejected by name filter: ${player.name}`);
+        }
+        return nameMatch;
+      });
+      console.log(`After name filter: ${filtered.length} players`);
     }
 
     if (filters.position) {
-      filtered = filtered.filter(
-        (player) => player.position === filters.position
-      );
+      console.log(`Applying position filter: '${filters.position}'`);
+      console.log("Available positions in data:", [...new Set(allPlayers.map(p => p.position))]);
+      filtered = filtered.filter((player) => {
+        const positionMatch = player.position === filters.position;
+        if (!positionMatch) {
+          console.log(`Player rejected by position filter: ${player.name}, position: ${player.position}`);
+        }
+        return positionMatch;
+      });
+      console.log(`After position filter: ${filtered.length} players`);
     }
 
     if (filters.nationality) {
       const searchNationality = filters.nationality.toLowerCase();
-      filtered = filtered.filter((player) =>
-        player.nationality.toLowerCase().includes(searchNationality)
-      );
+      console.log(`Applying nationality filter: '${searchNationality}'`);
+      filtered = filtered.filter((player) => {
+        const nationalityMatch = player.nationality.toLowerCase().includes(searchNationality);
+        if (!nationalityMatch) {
+          console.log(`Player rejected by nationality filter: ${player.name}, nationality: ${player.nationality}`);
+        }
+        return nationalityMatch;
+      });
+      console.log(`After nationality filter: ${filtered.length} players`);
     }
 
     if (filters.club) {
       const searchClub = filters.club.toLowerCase();
-      filtered = filtered.filter((player) =>
-        player.club?.toLowerCase().includes(searchClub)
-      );
+      console.log(`Applying club filter: '${searchClub}'`);
+      filtered = filtered.filter((player) => {
+        const clubMatch = player.club?.toLowerCase().includes(searchClub);
+        if (!clubMatch) {
+          console.log(`Player rejected by club filter: ${player.name}, club: ${player.club}`);
+        }
+        return clubMatch;
+      });
+      console.log(`After club filter: ${filtered.length} players`);
     }
 
     if (filters.isLbPlayer === "true") {
-      filtered = filtered.filter((player) => player.isLbPlayer === true);
+      console.log("Applying LB Player filter");
+      filtered = filtered.filter((player) => {
+        const lbPlayerMatch = player.isLbPlayer === true;
+        if (!lbPlayerMatch) {
+          console.log(`Player rejected by LB Player filter: ${player.name}, isLbPlayer: ${player.isLbPlayer}`);
+        }
+        return lbPlayerMatch;
+      });
+      console.log(`After LB Player filter: ${filtered.length} players`);
     }
 
     // Apply age filters if present
@@ -121,13 +182,21 @@ export default function Home() {
     const maxAge = filters.maxAge ? parseInt(filters.maxAge, 10) : undefined;
 
     if (minAge !== undefined || maxAge !== undefined) {
+      console.log(`Applying age filter: min=${minAge}, max=${maxAge}`);
       filtered = filtered.filter((player) => {
         const age = typeof player.age === 'string' ? parseInt(player.age, 10) : player.age;
-        if (typeof age !== 'number' || isNaN(age)) return false;
+        if (typeof age !== 'number' || isNaN(age)) {
+          console.log(`Player rejected by age filter (invalid age): ${player.name}, age: ${player.age}`);
+          return false;
+        }
         const meetsMin = minAge === undefined || isNaN(minAge) || age >= minAge;
         const meetsMax = maxAge === undefined || isNaN(maxAge) || age <= maxAge;
+        if (!meetsMin || !meetsMax) {
+          console.log(`Player rejected by age filter: ${player.name}, age: ${age}, meets min: ${meetsMin}, meets max: ${meetsMax}`);
+        }
         return meetsMin && meetsMax;
       });
+      console.log(`After age filter: ${filtered.length} players`);
     }
 
     // Apply market value filter if present
@@ -139,15 +208,28 @@ export default function Home() {
       : undefined;
 
     if (minValue !== undefined || maxValue !== undefined) {
+      console.log(`Applying market value filter: min=${minValue}, max=${maxValue}`);
       filtered = filtered.filter((player) => {
         const value = player.marketValueNumber;
-        if (value === undefined || value === null) return false;
+        if (value === undefined || value === null) {
+          console.log(`Player rejected by market value filter (no value): ${player.name}, market value: ${player.marketValue}`);
+          return false;
+        }
         const meetsMin =
           minValue === undefined || isNaN(minValue) || value >= minValue;
         const meetsMax =
           maxValue === undefined || isNaN(maxValue) || value <= maxValue;
+        if (!meetsMin || !meetsMax) {
+          console.log(`Player rejected by market value filter: ${player.name}, value: ${value}, meets min: ${meetsMin}, meets max: ${meetsMax}`);
+        }
         return meetsMin && meetsMax;
       });
+      console.log(`After market value filter: ${filtered.length} players`);
+    }
+    
+    console.log(`Final filtered results: ${filtered.length} players`);
+    if (filtered.length > 0) {
+      console.log("Sample of filtered players:", filtered.slice(0, 3).map(p => p.name));
     }
 
     return filtered;
@@ -167,31 +249,42 @@ export default function Home() {
   };
 
   const handleSubmit = async (newFilters: Record<string, string>) => {
+    console.log("=== FILTER SUBMISSION STARTED ===");
+    console.log("Filters received:", newFilters);
     setLoading(true);
     setError(null);
     setFilters(newFilters);
 
     try {
+      console.log(`Applying filters to ${allPlayers.length} players...`);
       // Apply filters to all players
       const filtered = applyFilters(newFilters);
+      console.log(`Filter result: ${filtered.length} players match the criteria`);
+      
       setFilteredPlayers(filtered);
 
       // Reset pagination
       setCurrentPage(1);
+      console.log("Reset pagination to page 1");
 
       // Show first page of results
-      setDisplayedPlayers(filtered.slice(0, PLAYERS_PER_PAGE));
+      const displayPlayers = filtered.slice(0, PLAYERS_PER_PAGE);
+      console.log(`Setting displayed players: ${displayPlayers.length} players (page 1)`);
+      setDisplayedPlayers(displayPlayers);
 
       // Mark that a search has been performed
       setHasSearched(true);
+      console.log("Search marked as performed");
 
       if (filtered.length === 0) {
+        console.log("No matching players found, setting error message");
         setError("No players found matching your criteria.");
       }
     } catch (error) {
       console.error("Error applying filters:", error);
       setError("Error filtering player data. Please try again.");
     } finally {
+      console.log("Filter submission process completed");
       setLoading(false);
     }
   };
