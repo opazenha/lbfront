@@ -4,17 +4,7 @@ import Image from "next/image";
 import React, { useState } from "react";
 import { Player as PlayerType } from "../services/playerService";
 
-// This interface is now redundant as we're using the imported type
-interface LocalPlayer {
-  id: string;
-  name: string;
-  age: number;
-  position: string;
-  nationality: string;
-  club: string;
-  marketValue: string;
-  imageUrl?: string;
-}
+
 
 interface PlayerTableProps {
   players: PlayerType[];
@@ -42,12 +32,18 @@ const PlayerTable = ({ players, loading }: PlayerTableProps) => {
   const getSortedPlayers = () => {
     return [...players].sort((a, b) => {
       // Get values for comparison
-      const valueA = a[sortField];
-      const valueB = b[sortField];
+      let valueA = a[sortField];
+      let valueB = b[sortField];
+
+      // Use marketValueNumber for sorting the Market Value column
+      if (sortField === 'marketValue') {
+        valueA = a.marketValueNumber ?? 0; // Default to 0 if undefined
+        valueB = b.marketValueNumber ?? 0; // Default to 0 if undefined
+      }
 
       // Handle different data types
       if (typeof valueA === "number" && typeof valueB === "number") {
-        // For numeric values (like age)
+        // For numeric values (like age, marketValueNumber)
         return sortDirection === "asc" ? valueA - valueB : valueB - valueA;
       } else if (typeof valueA === "string" && typeof valueB === "string") {
         // For string values (like name, position, nationality, club)

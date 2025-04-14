@@ -14,6 +14,8 @@ const PlayerFilter = ({ onSubmit, loading }: PlayerFilterProps) => {
   const [club, setClub] = useState('');
   const [minAge, setMinAge] = useState('');
   const [maxAge, setMaxAge] = useState('');
+  const [minValue, setMinValue] = useState('');
+  const [maxValue, setMaxValue] = useState('');
   const [isLbPlayer, setIsLbPlayer] = useState(false);
   
   const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -28,6 +30,10 @@ const PlayerFilter = ({ onSubmit, loading }: PlayerFilterProps) => {
     if (club) filters.club = club;
     if (minAge) filters.minAge = minAge;
     if (maxAge) filters.maxAge = maxAge;
+    
+    // Add market value filters
+    if (minValue) filters.minValue = minValue;
+    if (maxValue) filters.maxValue = maxValue;
     
     // Add LB player filter
     if (isLbPlayer) {
@@ -151,12 +157,18 @@ const PlayerFilter = ({ onSubmit, loading }: PlayerFilterProps) => {
               <input
                 type="number"
                 id="minValue"
+                value={minValue}
+                onChange={(e) => setMinValue(e.target.value)}
                 placeholder="Min value (€)"
+                min="0"
               />
               <input
                 type="number"
                 id="maxValue"
+                value={maxValue}
+                onChange={(e) => setMaxValue(e.target.value)}
                 placeholder="Max value (€)"
+                min="0"
               />
             </div>
           </div>
@@ -185,6 +197,8 @@ const PlayerFilter = ({ onSubmit, loading }: PlayerFilterProps) => {
               setClub('');
               setMinAge('');
               setMaxAge('');
+              setMinValue('');
+              setMaxValue('');
               setIsLbPlayer(false);
             }}
           >
