@@ -13,6 +13,7 @@ const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
   const menuItems = [
     { name: 'Dashboard', path: '/' },
     { name: 'Players', path: '/players' },
+    { name: 'Register', path: '/register' },
     { name: 'Clients', path: '/clients' },
     { name: 'Transfers', path: '/transfers' },
     { name: 'Contacts', path: '/contacts' },
