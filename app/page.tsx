@@ -90,7 +90,24 @@ const countryMap: Record<number, string> = {
 };
 
 export default function Home() {
-  const [players, setPlayers] = useState<Player[]>([]);
+  // All players fetched from API
+  const [allPlayers, setAllPlayers] = useState<Player[]>([]);
+  
+  // Players after applying filters
+  const [filteredPlayers, setFilteredPlayers] = useState<Player[]>([]);
+  
+  // Players currently displayed (subset of filtered players)
+  const [displayedPlayers, setDisplayedPlayers] = useState<Player[]>([]);
+  
+  // Number of players to show per page
+  const PLAYERS_PER_PAGE = 50;
+  
+  // Current page number
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  // Track if a search has been performed
+  const [hasSearched, setHasSearched] = useState(false);
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<Record<string, string>>({});
@@ -102,8 +119,11 @@ export default function Home() {
       setLoading(true);
       setApiStatus('checking');
       try {
+        // Fetch all players but don't display them yet
         const data = await getPlayers();
-        setPlayers(data);
+        setAllPlayers(data);
+        setFilteredPlayers([]);
+        setDisplayedPlayers([]);
         
         // Check if the API is available
         const isApiAvailable = await checkApiAvailability();
@@ -127,43 +147,97 @@ export default function Home() {
     loadInitialData();
   }, []);
 
+  // Function to apply filters and update displayed players
+  const applyFilters = (filters: Record<string, string>) => {
+    let filtered = [...allPlayers];
+
+    // Apply each filter
+    if (filters.name) {
+      const searchName = filters.name.toLowerCase();
+      filtered = filtered.filter(player => 
+        player.name.toLowerCase().includes(searchName)
+      );
+    }
+
+    if (filters.position) {
+      filtered = filtered.filter(player => 
+        player.positionId === parseInt(filters.position)
+      );
+    }
+
+    if (filters.nationality) {
+      const searchNationality = filters.nationality.toLowerCase();
+      filtered = filtered.filter(player =>
+        player.nationality.toLowerCase().includes(searchNationality)
+      );
+    }
+
+    if (filters.club) {
+      const searchClub = filters.club.toLowerCase();
+      filtered = filtered.filter(player =>
+        player.club?.toLowerCase().includes(searchClub)
+      );
+    }
+
+    if (filters.isLbPlayer === "true") {
+      filtered = filtered.filter(player => player.isLbPlayer === true);
+    }
+
+    // Apply market value filter if present
+    const minValue = filters.minValue ? parseFloat(filters.minValue) : undefined;
+    const maxValue = filters.maxValue ? parseFloat(filters.maxValue) : undefined;
+
+    if (minValue !== undefined || maxValue !== undefined) {
+      filtered = filtered.filter(player => {
+        const value = player.marketValueNumber;
+        if (value === undefined || value === null) return false;
+        const meetsMin = minValue === undefined || isNaN(minValue) || value >= minValue;
+        const meetsMax = maxValue === undefined || isNaN(maxValue) || value <= maxValue;
+        return meetsMin && meetsMax;
+      });
+    }
+
+    return filtered;
+  };
+
+  // Function to load more players
+  const loadMore = () => {
+    const nextPage = currentPage + 1;
+    const startIndex = currentPage * PLAYERS_PER_PAGE; // Start from where we left off
+    const endIndex = nextPage * PLAYERS_PER_PAGE;
+    
+    // Get the next batch of players
+    const nextBatch = filteredPlayers.slice(startIndex, endIndex);
+    
+    setDisplayedPlayers([...displayedPlayers, ...nextBatch]);
+    setCurrentPage(nextPage);
+  };
+
   const handleSubmit = async (newFilters: Record<string, string>) => {
     setLoading(true);
     setError(null);
-    
-    // Log the filters received from the PlayerFilter component
-    console.log('--- Form Submission ---');
-    console.log('Received filters:', newFilters);
-    
-    // Update the filters state
     setFilters(newFilters);
     
     try {
-      console.log('Calling getPlayers with filters:', newFilters);
-      const data = await getPlayers(newFilters);
-      console.log('Received player data:', data);
-      setPlayers(data);
+      // Apply filters to all players
+      const filtered = applyFilters(newFilters);
+      setFilteredPlayers(filtered);
       
-      // If we already know we're disconnected, check if API is now available
-      if (apiStatus !== 'connected') {
-        const isApiAvailable = await checkApiAvailability();
-        
-        if (isApiAvailable) {
-          setApiStatus('connected');
-          setError(null);
-        }
-      }
+      // Reset pagination
+      setCurrentPage(1);
       
-      if (data.length === 0) {
-        console.log('No players found matching criteria');
+      // Show first page of results
+      setDisplayedPlayers(filtered.slice(0, PLAYERS_PER_PAGE));
+      
+      // Mark that a search has been performed
+      setHasSearched(true);
+      
+      if (filtered.length === 0) {
         setError('No players found matching your criteria.');
-      } else {
-        console.log(`Found ${data.length} players after filtering`);
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
-      setApiStatus('disconnected');
-      setError("Error fetching player data. Please try again.");
+      console.error("Error applying filters:", error);
+      setError("Error filtering player data. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -182,11 +256,11 @@ export default function Home() {
           <div className="stats-container">
             <div className="stat-item">
               <span className="stat-label">Total Players</span>
-              <span className="stat-value">{players.length}</span>
+              <span className="stat-value">{allPlayers.length}</span>
             </div>
             <div className="stat-item">
               <span className="stat-label">LB Players</span>
-              <span className="stat-value">{players.filter(p => p.isLbPlayer).length}</span>
+              <span className="stat-value">{allPlayers.filter((p: Player) => p.isLbPlayer).length}</span>
             </div>
             <div className={`api-status ${apiStatus}`}>
               <span className="status-indicator"></span>
@@ -211,10 +285,26 @@ export default function Home() {
           </div>
         )}
         
-        <PlayerTable 
-          players={players} 
-          loading={loading} 
-        />
+        {/* Only show table after search */}
+        {hasSearched && (
+          <>
+            <PlayerTable 
+              players={displayedPlayers} 
+              loading={loading} 
+            />
+            
+            {/* Show load more button if there are more players to display */}
+            {displayedPlayers.length < filteredPlayers.length && (
+              <button 
+                onClick={loadMore}
+                className="load-more-button"
+                disabled={loading}
+              >
+                Load More Players
+              </button>
+            )}
+          </>
+        )}
         
         <div className="legend">
           <div className="legend-item">
@@ -370,6 +460,30 @@ export default function Home() {
         .checking .status-indicator {
           background-color: #f59e0b;
           animation: pulse 1.5s infinite;
+        }
+        
+        .load-more-button {
+          display: block;
+          width: 100%;
+          max-width: 200px;
+          margin: 20px auto;
+          padding: 12px 24px;
+          background-color: var(--primary);
+          color: white;
+          border: none;
+          border-radius: 6px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+        
+        .load-more-button:hover {
+          background-color: var(--primary-dark);
+        }
+        
+        .load-more-button:disabled {
+          background-color: #ccc;
+          cursor: not-allowed;
         }
         
         @keyframes pulse {

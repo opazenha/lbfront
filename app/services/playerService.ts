@@ -1,27 +1,58 @@
-// LB Sports API service
+// Transfermarkt API integration service
 
-// API base URL - using our Next.js API proxy instead of direct connection
-const API_BASE_URL = "/api/players";
+// Import API configuration
+import { API_CONFIG } from '../config/apiConfig';
 
-// Check if API is available through our proxy
+// Check if Transfermarkt API is available using the cache stats endpoint
 export const checkApiAvailability = async (): Promise<boolean> => {
+  // First try without timeout to see if the API is immediately available
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-    const response = await fetch(API_BASE_URL, {
+    const apiUrl = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CACHE_STATS}`;
+    console.log(`Quick API availability check at: ${apiUrl}`);
+    
+    const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
         Accept: "application/json",
       },
-      signal: controller.signal,
     });
 
-    clearTimeout(timeoutId);
+    console.log(`API availability check response: ${response.status} ${response.statusText}`);
     return response.ok;
   } catch (error) {
-    console.error("API availability check failed:", error);
-    return false;
+    // If the quick check fails, try again with a timeout
+    try {
+      const apiUrl = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CACHE_STATS}`;
+      console.log(`Retrying API availability check with timeout at: ${apiUrl}`);
+      
+      const response = await Promise.race([
+        fetch(apiUrl, {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('API check timed out')), 15000) // Increased timeout to 15 seconds
+        )
+      ]) as Response;
+
+      console.log(`API availability check response: ${response.status} ${response.statusText}`);
+      return response.ok;
+    } catch (retryError: any) {
+      console.error("API availability check failed. Error details:");
+      if (retryError instanceof Error) {
+        console.error(`  Name: ${retryError.name}`);
+        console.error(`  Message: ${retryError.message}`);
+        if (retryError.stack) {
+          console.error(`  Stack: ${retryError.stack}`);
+        }
+      } else {
+        console.error("  Raw Error:", retryError);
+      }
+      console.error(`Could not connect to API at ${API_CONFIG.BASE_URL}. Make sure the API server is running and check CORS configuration.`);
+      return false;
+    }
   }
 };
 
@@ -146,7 +177,8 @@ export interface Player {
   positionId?: number; // Add position ID for filtering
   nationality: string;
   club?: string;
-  marketValue: string;
+  marketValue: string; // Formatted string for display (e.g., €2.00m)
+  marketValueNumber?: number; // Raw numerical value for sorting/calculations
   imageUrl?: string;
   isLbPlayer?: boolean;
 }
@@ -206,6 +238,140 @@ const mapApiResponseToPlayer = (data: any): Player => {
     marketValue: formattedValue,
     isLbPlayer: data.lbPlayer || false,
   };
+};
+
+// Transform player data from the new Transfermarkt API format to our internal Player interface
+const transformPlayerFromTransfermarktApi = (data: any): Player => {
+  // Get primary position
+  const position = data.position || 'Unknown';
+  
+  // Map position to our positionId for backward compatibility
+  const positionId = getPositionIdFromName(position);
+  
+  // Format market value
+  let formattedValue = "Unknown";
+  if (data.marketValue) {
+    // Format the market value in millions with euro sign
+    formattedValue = `${(data.marketValue / 1000000).toFixed(2)}m €`;
+  }
+  
+  // Get nationality (use first one if there are multiple)
+  const nationality = data.nationalities && data.nationalities.length > 0 
+    ? data.nationalities[0] 
+    : 'Unknown';
+    
+  // Get club information
+  const club = data.club && data.club.name ? data.club.name : 'Unknown';
+  
+  return {
+    id: data.id,
+    name: data.name,
+    age: data.age || 0,
+    position: position,
+    positionId: positionId,
+    nationality: nationality,
+    club: club,
+    marketValue: formattedValue,
+    isLbPlayer: false, // Default to false, will be updated if needed
+  };
+};
+
+// Transform player profile data from the cache endpoint to our internal Player interface
+const transformPlayerProfileFromCache = (data: any): Player => {
+  // Handle the player profile structure from the cache endpoint
+  
+  // Get primary position from the position object
+  const positionMain = data.position?.main || 'Unknown';
+  
+  // Map position to our positionId for backward compatibility
+  const positionId = getPositionIdFromName(positionMain);
+  
+  // Get the formatted market value string from API (e.g., "€450k", "€2.00m")
+  const marketValueString = data.marketValue || 'Unknown';
+  
+  // Parse the string to get the numerical value using our helper function
+  const marketValueNumber = parseMarketValue(marketValueString);
+
+  // Get nationality (use citizenship array)
+  const nationality = data.citizenship && data.citizenship.length > 0 
+    ? data.citizenship[0] 
+    : 'Unknown';
+    
+  // Get club information
+  const club = data.club?.name || 'Unknown';
+  
+  return {
+    id: data.id,
+    name: data.name,
+    age: data.age || 0,
+    position: positionMain,
+    positionId: positionId,
+    nationality: nationality,
+    club: club,
+    marketValue: marketValueString, // Keep the original formatted string for display
+    marketValueNumber: marketValueNumber, // Store the parsed numerical value
+    isLbPlayer: data.isLbPlayer === true, // Get the value from API data, default to false if missing/null
+    imageUrl: data.imageUrl // Add image URL if available
+  };
+};
+
+// Helper function to parse market value strings (e.g., "€450k", "€2.00m") into numbers
+const parseMarketValue = (valueString: string | null | undefined): number | undefined => {
+  if (!valueString || typeof valueString !== 'string' || valueString.toLowerCase() === 'unknown') {
+    return undefined;
+  }
+
+  // Remove currency symbols (€, $, £ etc.) and whitespace
+  const cleanedString = valueString.replace(/[^0-9.,mk]/gi, '').trim();
+
+  let multiplier = 1;
+  let numberPart = cleanedString;
+
+  if (cleanedString.endsWith('m')) {
+    multiplier = 1000000;
+    numberPart = cleanedString.substring(0, cleanedString.length - 1);
+  } else if (cleanedString.endsWith('k')) {
+    multiplier = 1000;
+    numberPart = cleanedString.substring(0, cleanedString.length - 1);
+  }
+
+  // Replace comma with dot for decimal conversion if needed
+  numberPart = numberPart.replace(',', '.');
+
+  const numericValue = parseFloat(numberPart);
+
+  if (isNaN(numericValue)) {
+    console.warn(`Could not parse market value: ${valueString}`);
+    return undefined;
+  }
+
+  return numericValue * multiplier;
+};
+
+
+// Helper function to get position ID from position name
+const getPositionIdFromName = (positionName: string): number => {
+  // Reverse lookup in the position map
+  for (const [id, name] of Object.entries(positionMap)) {
+    if (name.toLowerCase() === positionName.toLowerCase()) {
+      return parseInt(id, 10);
+    }
+  }
+  
+  // If not found, try to match partial names
+  const lowerName = positionName.toLowerCase();
+  if (lowerName.includes('forward') || lowerName.includes('striker') || lowerName.includes('winger')) {
+    return 1; // Forward
+  } else if (lowerName.includes('midfield')) {
+    return 2; // Midfielder
+  } else if (lowerName.includes('defend') || lowerName.includes('back')) {
+    return 3; // Defender
+  } else if (lowerName.includes('keeper') || lowerName.includes('goalie')) {
+    return 4; // Goalkeeper
+  }
+  
+  // Default
+  return 0;
 };
 
 // Helper function to get nationality name from ID
@@ -427,84 +593,54 @@ const getMockPlayersWithFilters = (filters: any = {}): Player[] => {
   return filteredPlayers;
 };
 
-// Get all players with optional filtering
+// Get all players with optional filtering - now using the Transfermarkt API
 export const getPlayers = async (filters: any = {}): Promise<Player[]> => {
   console.log("getPlayers called with filters:", JSON.stringify(filters));
 
-  // For debugging, use mock data if requested
-  if (filters._useMock === "true") {
-    console.log("Using mock data as requested");
+  // For backward compatibility, still support the mock data option
+  if (filters._useMock === "true" || (API_CONFIG.USE_MOCK_DATA_IF_API_DOWN && !(await checkApiAvailability()))) {
+    console.log("Using mock data - either explicitly requested or API appears to be unavailable");
     return getMockPlayersWithFilters(filters);
   }
 
   try {
-    let url = API_BASE_URL;
-
-    // Build query parameters for filtering
-    const queryParams: string[] = [];
-
-    // Handle position filter
-    if (filters.position) {
-      const positionId = filters.position;
-      console.log(`Filtering by position ID: ${positionId}`);
-      console.log(
-        `Position name for ID ${positionId}: ${
-          positionMap[parseInt(positionId, 10)] || "Unknown"
-        }`
-      );
-      queryParams.push(`position=${positionId}`);
-    }
-
-    // Handle age filter
-    if (filters.minAge) {
-      const minAge = parseInt(filters.minAge, 10);
-      if (!isNaN(minAge)) {
-        console.log(`Filtering by minimum age: ${minAge}`);
-        queryParams.push(`minAge=${minAge}`);
-      }
-    }
-
-    if (filters.maxAge) {
-      const maxAge = parseInt(filters.maxAge, 10);
-      if (!isNaN(maxAge)) {
-        console.log(`Filtering by maximum age: ${maxAge}`);
-        queryParams.push(`maxAge=${maxAge}`);
-      }
-    }
-
-    // Handle name filter
+    // Now we're using the cache API to get all players at once instead of searching
+    // This allows us to do more flexible client-side filtering
+    
+    // Build the URL for the cache endpoint
+    const apiUrl = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CACHE_PLAYERS}`;
+    // We are fetching ALL players from the cache endpoint, so no query parameters needed here.
+    let queryParams: string[] = [];
+    
+    console.log('Using the cache endpoint to fetch ALL player profiles');
+    
+    // Log the filters we'll apply client-side
     if (filters.name) {
-      // Use a special query parameter to indicate we want partial matches
-      queryParams.push(`name=${encodeURIComponent(filters.name)}`);
-      queryParams.push(`nameMatchType=partial`);
-      console.log(
-        `Searching for players with name containing: ${filters.name}`
-      );
+      console.log(`Will apply name filter for "${filters.name}" client-side`);
     }
-
-    // Handle nationality filter
+    
+    if (filters.position) {
+      console.log(`Will apply position filter with ID ${filters.position} client-side`);
+    }
+    
+    if (filters.minAge || filters.maxAge) {
+      console.log(`Will apply age filters client-side: min=${filters.minAge || 'none'}, max=${filters.maxAge || 'none'}`);
+    }
+    
     if (filters.nationality) {
-      queryParams.push(
-        `nationality=${encodeURIComponent(filters.nationality)}`
-      );
+      console.log(`Will apply nationality filter for ${filters.nationality} client-side`);
     }
-
-    // Handle club filter
+    
     if (filters.club) {
-      queryParams.push(`club=${encodeURIComponent(filters.club)}`);
+      console.log(`Will apply club filter for ${filters.club} client-side`);
     }
-
-    // Handle LB player filter
+    
     if (filters.isLbPlayer === "true") {
-      queryParams.push("isLbPlayer=true");
-      console.log("Filtering for LB players only");
+      console.log("Will apply LB player filter client-side");
     }
 
-    // Add query parameters to URL if any exist
-    if (queryParams.length > 0) {
-      url = `${API_BASE_URL}?${queryParams.join("&")}`;
-    }
-
+    // Construct the full URL with query parameters
+    const url = `${apiUrl}${queryParams.length > 0 ? '?' + queryParams.join('&') : ''}`;
     console.log(`Requesting API with URL: ${url}`);
 
     // Set timeout to avoid long waiting times if API is down
@@ -526,38 +662,35 @@ export const getPlayers = async (filters: any = {}): Promise<Player[]> => {
       `API Response status: ${response.status} ${response.statusText}`
     );
 
-    // Log response headers for debugging
-    const headers: Record<string, string> = {};
-    response.headers.forEach((value, key) => {
-      headers[key] = value;
-    });
-    console.log("Response headers:", headers);
-
     if (!response.ok) {
       throw new Error(`API error: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
     console.log(`API Response data type: ${typeof data}`);
-    console.log(`API Response is array: ${Array.isArray(data)}`);
-    console.log(
-      `API Response length: ${Array.isArray(data) ? data.length : "N/A"}`
-    );
-
-    if (Array.isArray(data) && data.length > 0) {
+    
+    // The cache endpoint returns an array of player objects directly
+    if (!Array.isArray(data)) {
+      console.log('Unexpected API response format, expected an array');
+      console.log('API response type:', typeof data);
+      // Show a snippet of the response for debugging
+      console.log('API response preview:', JSON.stringify(data).substring(0, 200) + '...');
+      return [];
+    }
+    
+    console.log(`Cache API returned ${data.length} player profiles`);
+    
+    if (data.length > 0) {
       console.log("First player sample:", JSON.stringify(data[0], null, 2));
     }
 
-    // Check if the response is an array or a single object
-    const playerDataArray = Array.isArray(data) ? data : [data];
-    console.log(
-      `Processing ${playerDataArray.length} players from API response`
-    );
-
-    let players = playerDataArray.map(mapApiResponseToPlayer);
+    // Transform the data from cache endpoint to match our Player interface
+    let players = data.map((playerData: any) => transformPlayerProfileFromCache(playerData));
+      
+    console.log(`Transformed ${players.length} players from cache endpoint`);
     console.log(
       "Mapped players sample:",
-      players.slice(0, 2).map((p) => ({
+      players.slice(0, 2).map((p: Player) => ({
         id: p.id,
         name: p.name,
         position: p.position,
@@ -576,17 +709,20 @@ export const getPlayers = async (filters: any = {}): Promise<Player[]> => {
       console.log(`Double-checking position filter for ID: ${positionId}`);
 
       // Log position IDs of returned players
-      const positionIds = players.map((p) => p.positionId);
+      const positionIds = players.map((p: Player) => p.positionId);
       console.log(
         `Position IDs in returned players: ${positionIds.join(", ")}`
       );
 
       // Filter again on client side if needed
-      players = players.filter((player) => player.positionId === positionId);
+      players = players.filter((player: Player) => player.positionId === positionId);
       console.log(
         `After client-side position filtering: ${players.length} players`
       );
     }
+
+    // Log the full filters object received for client-side filtering
+    console.log("DEBUG: Client-side filters received:", JSON.stringify(filters));
 
     // Apply name filtering on client side to ensure partial matches work correctly
     if (filters.name) {
@@ -594,29 +730,35 @@ export const getPlayers = async (filters: any = {}): Promise<Player[]> => {
       const searchName = filters.name.toLowerCase();
 
       // Log player names before filtering for debugging
-      console.log(
-        "Player names before filtering:",
-        players
-          .slice(0, 5)
-          .map((p) => p.name)
-          .join(", ") + (players.length > 5 ? "..." : "")
-      );
+      if (players.length > 0) {
+        console.log(
+          "Player names before filtering (sample):",
+          players
+            .slice(0, 5)
+            .map((p: Player) => p.name)
+            .join(", ") + (players.length > 5 ? "..." : "")
+        );
+      }
 
       // Filter players whose names contain the search term (case insensitive)
-      players = players.filter((player) =>
-        player.name.toLowerCase().includes(searchName)
-      );
+      players = players.filter((player: Player) => {
+        // Ensure we have a valid name before attempting to search
+        return player.name && player.name.toLowerCase().includes(searchName);
+      });
 
-      console.log(
-        "Player names after filtering:",
-        players
-          .slice(0, 5)
-          .map((p) => p.name)
-          .join(", ") + (players.length > 5 ? "..." : "")
-      );
-      console.log(
-        `After client-side name filtering: ${players.length} players`
-      );
+      // Log results after filtering
+      if (players.length > 0) {
+        console.log(
+          "Player names after filtering (sample):",
+          players
+            .slice(0, 5)
+            .map((p: Player) => p.name)
+            .join(", ") + (players.length > 5 ? "..." : "")
+        );
+      } else {
+        console.log("No players matched the name filter criteria");
+      }
+      console.log(`After client-side name filtering: ${players.length} players`);
     }
 
     // Apply age filtering on client side
@@ -629,10 +771,10 @@ export const getPlayers = async (filters: any = {}): Promise<Player[]> => {
       console.log(`Age range: ${minAge} - ${maxAge}`);
       console.log(
         "Player ages before filtering:",
-        players.map((p) => p.age).join(", ")
+        players.map((p: Player) => p.age).join(", ")
       );
 
-      players = players.filter((player) => {
+      players = players.filter((player: Player) => {
         const age = player.age || 0;
         const meetsMinAge = isNaN(minAge) || age >= minAge;
         const meetsMaxAge = isNaN(maxAge) || age <= maxAge;
@@ -641,21 +783,21 @@ export const getPlayers = async (filters: any = {}): Promise<Player[]> => {
 
       console.log(
         "Player ages after filtering:",
-        players.map((p) => p.age).join(", ")
+        players.map((p: Player) => p.age).join(", ")
       );
       console.log(`After client-side age filtering: ${players.length} players`);
     }
 
     if (filters.nationality) {
       const searchNationality = filters.nationality.toLowerCase();
-      players = players.filter((player) =>
+      players = players.filter((player: Player) =>
         player.nationality.toLowerCase().includes(searchNationality)
       );
     }
 
-    if (filters.club && players[0].club) {
+    if (filters.club && players.length > 0 && players[0].club) {
       const searchClub = filters.club.toLowerCase();
-      players = players.filter((player) =>
+      players = players.filter((player: Player) =>
         player.club?.toLowerCase().includes(searchClub)
       );
     }
@@ -665,9 +807,39 @@ export const getPlayers = async (filters: any = {}): Promise<Player[]> => {
       console.log("Applying client-side LB player filtering");
       console.log(`Players before LB filter: ${players.length}`);
 
-      players = players.filter((player) => player.isLbPlayer === true);
+      players = players.filter((player: Player) => player.isLbPlayer === true);
 
       console.log(`Players after LB filter: ${players.length}`);
+    }
+
+    // Apply Market Value filter on client side
+    const minValue = filters.minValue ? parseFloat(filters.minValue) : undefined;
+    const maxValue = filters.maxValue ? parseFloat(filters.maxValue) : undefined;
+
+    if (minValue !== undefined || maxValue !== undefined) {
+      console.log(`DEBUG: Parsed minValue: ${minValue} (type: ${typeof minValue}), Parsed maxValue: ${maxValue} (type: ${typeof maxValue})`); // Log parsed values
+      console.log(`Applying client-side market value filtering (Min: ${minValue}, Max: ${maxValue})`);
+      console.log(`Players before market value filter: ${players.length}`);
+
+      let mvLogCounter = 0; // Counter to limit logging
+      players = players.filter((player: Player) => {
+        const value = player.marketValueNumber;
+        // If marketValueNumber is undefined or null, the player does not meet the criteria
+        if (value === undefined || value === null) {
+            return false;
+        }
+        const meetsMin = minValue === undefined || isNaN(minValue) || value >= minValue;
+        const meetsMax = maxValue === undefined || isNaN(maxValue) || value <= maxValue;
+        const result = meetsMin && meetsMax;
+        // Log details for the first few players being checked
+        if (mvLogCounter < 5) {
+          console.log(`DEBUG MV Filter: Player=${player.id}, Value=${value}, Min=${minValue}, Max=${maxValue}, meetsMin=${meetsMin}, meetsMax=${meetsMax}, Result=${result}`);
+          mvLogCounter++;
+        }
+        return result;
+      });
+
+      console.log(`Players after market value filter: ${players.length}`);
     }
 
     return players;
@@ -699,16 +871,27 @@ export const getPlayers = async (filters: any = {}): Promise<Player[]> => {
   }
 };
 
-// Get player by ID
+// Get player by ID - Now using the cache endpoint
 export const getPlayerById = async (id: string): Promise<Player | null> => {
   try {
+    // Check if we should use mock data if API is unavailable
+    const apiAvailable = await checkApiAvailability();
+    if (API_CONFIG.USE_MOCK_DATA_IF_API_DOWN && !apiAvailable) {
+      console.warn("API appears to be unavailable, using mock data for player details");
+      const mockPlayer = mockPlayers.find(p => p.id === id);
+      return mockPlayer || null;
+    }
+    
+    // First we'll try to find the player in the cache
+    // This approach is more efficient than requesting individual player profiles
+    console.log(`Finding player ${id} from the player cache`);
+    
     // Set timeout to avoid long waiting times if API is down
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT || 5000);
 
-    console.log(`Fetching player with ID: ${id}`);
-
-    const response = await fetch(`${API_BASE_URL}/${id}`, {
+    // Fetch from cache endpoint, with a limit of 50 to get as many players as possible
+    const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CACHE_PLAYERS}?limit=50`, {
       signal: controller.signal,
       headers: {
         Accept: "application/json",
@@ -722,6 +905,7 @@ export const getPlayerById = async (id: string): Promise<Player | null> => {
     );
 
     if (response.status === 404) {
+      console.log(`Player with ID ${id} not found`);
       return null;
     }
 
@@ -730,7 +914,29 @@ export const getPlayerById = async (id: string): Promise<Player | null> => {
     }
 
     const data = await response.json();
-    return mapApiResponseToPlayer(data);
+    
+    // Cache endpoint returns an array of player profiles
+    if (Array.isArray(data)) {
+      // Find the player with the matching ID in the cache
+      const playerData = data.find((player: any) => player.id === id);
+      
+      if (playerData) {
+        console.log(`Found player ${id} in cache`);
+        return transformPlayerProfileFromCache(playerData);
+      } else {
+        console.log(`Player ${id} not found in cache, falling back to mock data`);
+        const mockPlayer = mockPlayers.find(p => p.id === id);
+        return mockPlayer || null;
+      }
+    } else {
+      // If response is not an array, it might be a direct player profile
+      if (data.id === id) {
+        return transformPlayerProfileFromCache(data);
+      }
+      
+      console.error('Unexpected response format from cache endpoint');
+      return null;
+    }
   } catch (error) {
     console.error("Error fetching player by ID:", error);
 
