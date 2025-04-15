@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
+import { API_CONFIG } from '../../config/apiConfig';
 
-// The actual API base URL
-const API_BASE_URL = 'http://localhost:7771';
+// Use the centralized API configuration
 
 /**
  * GET handler for /api/players route
@@ -13,13 +13,13 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     
     // Build the target URL with any query parameters
-    let targetUrl = `${API_BASE_URL}/api/players`;
+    let targetUrl = `${API_CONFIG.BACKEND_URL}/api/players`;
     
     // Handle position filtering specifically
     const position = searchParams.get('position');
     if (position) {
       // If we have a position parameter, use the position endpoint
-      targetUrl = `${API_BASE_URL}/api/players/position?positionId=${position}`;
+      targetUrl = `${API_CONFIG.BACKEND_URL}/api/players/position?positionId=${position}`;
       console.log(`Proxying to position endpoint: ${targetUrl}`);
     } 
     // Handle other query parameters
@@ -128,7 +128,7 @@ export async function POST(request: Request) {
     console.log('Player registration request body:', body);
     
     // Make the request to the actual API
-    const response = await fetch(`${API_BASE_URL}/players`, {
+    const response = await fetch(`${API_CONFIG.BACKEND_URL}/players`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

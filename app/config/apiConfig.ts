@@ -5,6 +5,10 @@
 // These routes are defined in app/api/ and proxy requests to the Transfermarkt API
 const API_BASE_URL = '/api';
 
+// The actual backend API URL (used by the Next.js API routes to proxy requests)
+// This should be the only place where the actual backend URL is defined
+const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:7771';
+
 // Allow for fallback to mock data if API is unavailable
 const USE_MOCK_DATA_IF_API_DOWN = process.env.NEXT_PUBLIC_USE_MOCK_IF_API_DOWN !== 'false';
 
@@ -39,6 +43,7 @@ const API_ENDPOINTS = {
 // Export the configuration
 export const API_CONFIG = {
   BASE_URL: API_BASE_URL,
+  BACKEND_URL: BACKEND_API_URL, // The actual backend URL
   ENDPOINTS: API_ENDPOINTS,
   USE_MOCK_DATA_IF_API_DOWN,
   ENABLE_API_DEBUG,

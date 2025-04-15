@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { apiCache } from '../../../services/player/cache';
+import { API_CONFIG } from '../../../config/apiConfig';
 
 // Rate limiting variables
 let lastRequestTime = 0;
@@ -29,7 +30,7 @@ export async function GET() {
     lastRequestTime = Date.now();
     
     console.log('API route: Fetching cache stats from Transfermarkt API');
-    const response = await fetch('http://localhost:7771/cache/stats', {
+    const response = await fetch(`${API_CONFIG.BACKEND_URL}/cache/stats`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

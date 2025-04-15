@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
+import { API_CONFIG } from '../../../config/apiConfig';
 
-// The actual API URL
-const API_BASE_URL = 'http://localhost:7771/api/players';
+// Use the centralized API configuration
 
 /**
  * GET handler for /api/players/[id] route
@@ -13,7 +13,7 @@ export async function GET(
 ) {
   try {
     const id = params.id;
-    const targetUrl = `${API_BASE_URL}/${id}`;
+    const targetUrl = `${API_CONFIG.BACKEND_URL}/api/players/${id}`;
     
     console.log(`Proxying request to: ${targetUrl}`);
     
@@ -64,7 +64,7 @@ export async function DELETE(
 ) {
   try {
     const id = params.id;
-    const targetUrl = `${API_BASE_URL}/${id}`;
+    const targetUrl = `${API_CONFIG.BACKEND_URL}/api/players/${id}`;
     
     console.log(`Proxying DELETE request to: ${targetUrl}`);
     
