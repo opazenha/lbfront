@@ -191,7 +191,7 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
         {scrapedData && (
           <div className="scraped-data">
             <h3 className="scraped-data-title">Scraped Player Data</h3>
-
+            kj
             <div className="scraped-data-grid">
               {scrapedData.imageUrl && (
                 <div className="data-item">
@@ -243,7 +243,6 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
                 <div className="data-value">{scrapedData.contractExpires}</div>
               </div>
             </div>
-
             <CopyToClipboard player={scrapedData} />
           </div>
         )}

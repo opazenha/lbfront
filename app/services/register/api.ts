@@ -8,23 +8,23 @@ import { Partner, Player } from "../../components/Register/shared/types";
 export const extractPlayerIdFromUrl = (url: string): string | null => {
   try {
     console.log("Extracting player ID from URL:", url);
-    
+
     // Handle multiple possible URL formats from Transfermarkt
     // Example: https://www.transfermarkt.us/malcom/profil/spieler/323704
-    
+
     // Try the /spieler/{id} pattern first (most common format)
     let match = url.match(/\/spieler\/(\d+)/);
-    
+
     // If that doesn't work, try /player/(\d+) pattern
     if (!match) {
       match = url.match(/\/player\/(\d+)/);
     }
-    
+
     // If that doesn't work, try a more general pattern to find any numeric ID at the end
     if (!match) {
       match = url.match(/\/(\d+)(?:[?#]|$)/);
     }
-    
+
     const playerId = match ? match[1] : null;
     console.log("Extracted player ID:", playerId);
     return playerId;
@@ -63,7 +63,7 @@ export const fetchPlayerDataFromTransfermarkt = async (
         "Content-Type": "application/json",
       },
       // Add cache: 'no-store' to prevent caching issues
-      cache: 'no-store'
+      cache: "no-store",
     });
 
     console.log("API response status:", response.status);
