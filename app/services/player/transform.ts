@@ -102,17 +102,33 @@ export const transformPlayerProfileFromCache = (data: any): Player => {
     console.log("No nationality data found");
   }
 
+  const citizenship = Array.isArray(data.citizenship) ? data.citizenship : [];
   const player = {
     id: data.id?.toString() || "",
     name: data.name || "Unknown",
+    fullName: data.fullName || undefined,
+    description: data.description || undefined,
     age: age,
     position: positionMain,
-    nationality: nationality,
-    club: club,
+    citizenship,
+    nationality: citizenship[0] || '', // used for sorting
+    club: typeof data.club === 'object' ? data.club?.name : data.club,
     marketValue: marketValueString,
     marketValueNumber,
     imageUrl: data.imageUrl,
     isLbPlayer: data.isLbPlayer || false,
+    transfermarktUrl: data.url || undefined,
+    height: data.height || undefined,
+    contractExpires: (typeof data.club === 'object' ? data.club?.contractExpires : undefined) || data.contractExpires || undefined,
+    dateOfBirth: data.dateOfBirth || undefined,
+    placeOfBirth: data.placeOfBirth || undefined,
+    foot: data.foot || undefined,
+    shirtNumber: data.shirtNumber || undefined,
+    agentName: data.agent?.name || undefined,
+    agentUrl: data.agent?.url || undefined,
+    socialMedia: data.socialMedia || undefined,
+    createdAt: typeof data.createdAt === 'string' ? data.createdAt : undefined,
+    updatedAt: typeof data.updatedAt === 'string' ? data.updatedAt : undefined,
   };
   
   console.log("Transformed player:", JSON.stringify(player, null, 2));

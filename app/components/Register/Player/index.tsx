@@ -27,15 +27,32 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
   }>({});
   const [fetchingData, setFetchingData] = useState(false);
 
-  // Mock data for partners - in a real app, this would come from an API
+  // Fetch partners from backend API
   useEffect(() => {
-    // Simulate API call to fetch partners
-    setPartners([
-      { id: "1", name: "LB Sports Agency" },
-      { id: "2", name: "Elite Football Group" },
-      { id: "3", name: "Premier Talent Management" },
-      { id: "4", name: "Global Soccer Representatives" },
-    ]);
+    const fetchPartners = async () => {
+      try {
+        const response = await fetch("/api/cache/partners", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+        });
+        if (!response.ok) throw new Error("Failed to fetch partners");
+        const data = await response.json();
+        // Normalize to Partner[]
+        const partners = (Array.isArray(data) ? data : []).map((p, idx) => ({
+          id: p.id || p.name || idx.toString(),
+          name: p.name,
+          transfermarktUrl: p.transfermarktUrl || "",
+          notes: p.notes || "",
+        }));
+        setPartners(partners);
+        setFilteredPartners(partners);
+      } catch (err) {
+        setPartners([]);
+        setFilteredPartners([]);
+      }
+    };
+    fetchPartners();
   }, []);
 
   const handleInputChange = (
@@ -54,7 +71,9 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
     }
   };
 
-  const handlePartnerSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePartnerSearch = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const search = e.target.value;
     setPartnerSearch(search);
 
@@ -64,11 +83,42 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
     );
     setFilteredPartners(filtered);
     setShowPartnerDropdown(true);
+
+    // If no match and input is not empty, show a 'create new' option
+    if (search.trim() && filtered.length === 0) {
+      setFilteredPartners([
+        ...filtered,
+        {
+          id: "new",
+          name: `Create new partner: "${search}"`,
+          transfermarktUrl: "",
+          notes: "",
+        },
+      ]);
+    }
   };
 
-  const selectPartner = (partner: Partner) => {
-    setFormData((prev) => ({ ...prev, partnerId: partner.id }));
-    setPartnerSearch(partner.name);
+  const selectPartner = async (partner: Partner) => {
+    if (partner.id === "new") {
+      // Register new partner
+      const { registerPartner } = await import(
+        "../../../services/register/api"
+      );
+      const newPartner = await registerPartner({
+        name: partnerSearch,
+        transfermarktUrl: "",
+        notes: "",
+      });
+      if (newPartner) {
+        setPartners((prev) => [...prev, newPartner]);
+        setFilteredPartners([newPartner]);
+        setFormData((prev) => ({ ...prev, partnerId: newPartner.id }));
+        setPartnerSearch(newPartner.name);
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, partnerId: partner.id }));
+      setPartnerSearch(partner.name);
+    }
     setShowPartnerDropdown(false);
 
     // Clear validation error for partnerId
@@ -82,6 +132,30 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
   };
 
   const fetchPlayerData = async () => {
+    // Refresh partners list after player data is fetched
+    const refreshPartners = async () => {
+      try {
+        const response = await fetch("/api/cache/partners", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+        });
+        if (!response.ok) throw new Error("Failed to fetch partners");
+        const data = await response.json();
+        const partners = (Array.isArray(data) ? data : []).map((p, idx) => ({
+          id: p.id || p.name || idx.toString(),
+          name: p.name,
+          transfermarktUrl: p.transfermarktUrl || "",
+          notes: p.notes || "",
+        }));
+        setPartners(partners);
+        setFilteredPartners(partners);
+      } catch (err) {
+        setPartners([]);
+        setFilteredPartners([]);
+      }
+    };
+
     if (!formData.transfermarktUrl) {
       setValidationErrors((prev) => ({
         ...prev,
@@ -104,6 +178,8 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
       );
 
       if (playerData) {
+        // Refresh partners after player registration (in case a new partner was created)
+        await refreshPartners();
         // If we successfully fetched player data, update the UI
         // A real implementation would pass this data back up to the parent component
         // For now, we'll just pass it via props
@@ -219,17 +295,12 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
 
               <div className="data-item">
                 <div className="data-label">Nationality</div>
-                <div className="data-value">{scrapedData.nationality}</div>
+                <div className="data-value">{scrapedData.citizenship}</div>
               </div>
 
               <div className="data-item">
                 <div className="data-label">Height</div>
                 <div className="data-value">{scrapedData.height}</div>
-              </div>
-
-              <div className="data-item">
-                <div className="data-label">Weight</div>
-                <div className="data-value">{scrapedData.weight}</div>
               </div>
 
               <div className="data-item">

@@ -17,8 +17,7 @@ export interface Player {
   age?: number;
   position?: string;
   height?: string;
-  weight?: string;
-  nationality?: string;
+  citizenship?: string[];
   contractExpires?: string;
   club?: string;
   imageUrl?: string;
@@ -52,4 +51,4 @@ export interface PartnerFormProps {
 }
 
 // Registration mode
-export type RegistrationMode = 'player' | 'partner';
+export type RegistrationMode = "player" | "partner";
