@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
-// The actual API URL
-const API_URL = 'http://localhost:7771/api/players';
+// The actual API base URL
+const API_BASE_URL = 'http://localhost:7771';
 
 /**
  * GET handler for /api/players route
@@ -13,13 +13,13 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     
     // Build the target URL with any query parameters
-    let targetUrl = API_URL;
+    let targetUrl = `${API_BASE_URL}/api/players`;
     
     // Handle position filtering specifically
     const position = searchParams.get('position');
     if (position) {
       // If we have a position parameter, use the position endpoint
-      targetUrl = `${API_URL}/position?positionId=${position}`;
+      targetUrl = `${API_BASE_URL}/api/players/position?positionId=${position}`;
       console.log(`Proxying to position endpoint: ${targetUrl}`);
     } 
     // Handle other query parameters
@@ -110,15 +110,25 @@ export async function GET(request: Request) {
 }
 
 /**
- * GET handler for specific player by ID
+ * POST handler for /api/players route
+ * Acts as a proxy to the actual Transfermarkt API for player registration
+ * 
+ * According to the API documentation:
+ * This endpoint will:
+ * 1. Scrape the player data from Transfermarkt using the provided ID
+ * 2. Add the custom fields (youtubeUrl, notes, partnerId)
+ * 3. Save to MongoDB with isLbPlayer flag set to true
+ * 4. Return the enriched player profile
  */
 export async function POST(request: Request) {
   try {
     // Get the request body
     const body = await request.json();
     
+    console.log('Player registration request body:', body);
+    
     // Make the request to the actual API
-    const response = await fetch(API_URL, {
+    const response = await fetch(`${API_BASE_URL}/players`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -126,21 +136,43 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify(body),
       // Add a timeout to avoid hanging requests
-      signal: AbortSignal.timeout(5000)
+      signal: AbortSignal.timeout(5000),
+      cache: 'no-store'
     });
     
-    // Get the response data
+    // Check if the request was successful
+    if (!response.ok) {
+      console.error(`Player registration API request failed with status: ${response.status}`);
+      
+      // Handle specific error cases
+      if (response.status === 404) {
+        return NextResponse.json(
+          { error: 'Player not found on Transfermarkt' },
+          { status: 404 }
+        );
+      } else if (response.status === 422) {
+        return NextResponse.json(
+          { error: 'Validation error in request data' },
+          { status: 422 }
+        );
+      }
+      
+      return NextResponse.json(
+        { error: `Failed to register player. Status: ${response.status}` },
+        { status: response.status }
+      );
+    }
+    
+    // Parse the response data
     const data = await response.json();
+    console.log('Successfully registered player:', data);
     
-    // Return the response
-    return NextResponse.json(data, {
-      status: response.status,
-      statusText: response.statusText
-    });
+    // Return the response with status 201 (Created)
+    return NextResponse.json(data, { status: 201 });
   } catch (error) {
-    console.error('API proxy error:', error);
+    console.error('Player registration API proxy error:', error);
     return NextResponse.json(
-      { error: 'Failed to create player' },
+      { error: 'Failed to register player' },
       { status: 500 }
     );
   }

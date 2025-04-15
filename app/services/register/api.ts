@@ -103,30 +103,129 @@ export const fetchPlayerDataFromTransfermarkt = async (
 
 /**
  * Registers a new player in the system
+ * @param playerData Object containing player registration data
+ * @returns Promise resolving to the registered player data or null if registration failed
  */
-export const registerPlayer = async (playerData: any): Promise<boolean> => {
+export const registerPlayer = async (playerData: {
+  transfermarktUrl: string;
+  notes?: string;
+  youtubeUrl?: string;
+  partnerId?: string;
+}): Promise<Player | null> => {
   try {
-    // This would be an actual API call to the backend in production
-    // For now, we'll just simulate a successful registration
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    return true;
+    console.log("Registering player with data:", playerData);
+    
+    // Extract the Transfermarkt ID from the URL
+    const transfermarktId = extractPlayerIdFromUrl(playerData.transfermarktUrl);
+    
+    if (!transfermarktId) {
+      console.error("Could not extract player ID from URL:", playerData.transfermarktUrl);
+      throw new Error("Invalid Transfermarkt URL. Could not extract player ID.");
+    }
+    
+    // Prepare the request payload according to the API schema
+    const requestPayload = {
+      transfermarktId: transfermarktId,
+      youtubeUrl: playerData.youtubeUrl || null,
+      notes: playerData.notes || null,
+      partnerId: playerData.partnerId || null
+    };
+    
+    console.log("Sending player registration request with payload:", requestPayload);
+    
+    // Make the POST request to register the player
+    const response = await fetch('/api/players', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestPayload),
+    });
+    
+    console.log("Player registration response status:", response.status);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("Player registration failed:", errorData);
+      throw new Error(`Failed to register player. Status: ${response.status}`);
+    }
+    
+    const registeredPlayer = await response.json();
+    console.log("Player successfully registered:", registeredPlayer);
+    
+    // Transform the response data to our Player interface
+    return {
+      id: registeredPlayer.id || transfermarktId,
+      name: registeredPlayer.name || "Unknown",
+      transfermarktUrl: playerData.transfermarktUrl,
+      notes: playerData.notes,
+      youtubeUrl: playerData.youtubeUrl,
+      partnerId: playerData.partnerId,
+      age: registeredPlayer.age,
+      position: registeredPlayer.position?.main,
+      height: registeredPlayer.height,
+      nationality: registeredPlayer.citizenship?.[0],
+      club: registeredPlayer.club?.name,
+      contractExpires: registeredPlayer.club?.contractExpires,
+      imageUrl: registeredPlayer.imageUrl
+    };
   } catch (error) {
     console.error("Error registering player:", error);
-    return false;
+    return null;
   }
 };
 
 /**
  * Registers a new partner in the system
+ * @param partnerData Object containing partner registration data
+ * @returns Promise resolving to the registered partner data or null if registration failed
  */
-export const registerPartner = async (partnerData: any): Promise<boolean> => {
+export const registerPartner = async (partnerData: {
+  name: string;
+  transfermarktUrl?: string;
+  notes?: string;
+}): Promise<Partner | null> => {
   try {
-    // This would be an actual API call to the backend in production
-    // For now, we'll just simulate a successful registration
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    return true;
+    console.log("Registering partner with data:", partnerData);
+    
+    // Prepare the request payload according to the API schema
+    const requestPayload = {
+      name: partnerData.name,
+      transfermarktUrl: partnerData.transfermarktUrl || null,
+      notes: partnerData.notes || null
+    };
+    
+    console.log("Sending partner registration request with payload:", requestPayload);
+    
+    // Make the POST request to register the partner
+    const response = await fetch('/api/partners', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestPayload),
+    });
+    
+    console.log("Partner registration response status:", response.status);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("Partner registration failed:", errorData);
+      throw new Error(`Failed to register partner. Status: ${response.status}`);
+    }
+    
+    const registeredPartner = await response.json();
+    console.log("Partner successfully registered:", registeredPartner);
+    
+    // Return the registered partner data
+    return {
+      id: registeredPartner.id,
+      name: registeredPartner.name,
+      transfermarktUrl: registeredPartner.transfermarktUrl,
+      notes: registeredPartner.notes
+    };
   } catch (error) {
     console.error("Error registering partner:", error);
-    return false;
+    return null;
   }
 };

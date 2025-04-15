@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import PlayerRegistrationForm from './Player';
 import PartnerRegistrationForm from './Partner';
-import { RegistrationMode, PlayerFormData, PartnerFormData, Player } from './shared/types';
+import { RegistrationMode, PlayerFormData, PartnerFormData, Player, Partner } from './shared/types';
+import { registerPlayer, registerPartner } from '../../services/register/api';
 import './styles.css';
 
 const Register: React.FC = () => {
@@ -24,14 +25,17 @@ const Register: React.FC = () => {
     setLoading(true);
     
     try {
-      // This would be a real API call in production
       console.log('Submitting player data:', data);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Call the actual API function
+      const result = await registerPlayer(data);
       
-      // Reset form or navigate to another page
-      alert('Player registered successfully!');
+      if (result) {
+        // Reset form or navigate to another page
+        alert('Player registered successfully!');
+      } else {
+        throw new Error('Failed to register player');
+      }
     } catch (error) {
       console.error('Error registering player:', error);
       alert('Failed to register player. Please try again.');
@@ -44,14 +48,17 @@ const Register: React.FC = () => {
     setLoading(true);
     
     try {
-      // This would be a real API call in production
       console.log('Submitting partner data:', data);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Call the actual API function
+      const result = await registerPartner(data);
       
-      // Reset form or navigate to another page
-      alert('Partner registered successfully!');
+      if (result) {
+        // Reset form or navigate to another page
+        alert('Partner registered successfully!');
+      } else {
+        throw new Error('Failed to register partner');
+      }
     } catch (error) {
       console.error('Error registering partner:', error);
       alert('Failed to register partner. Please try again.');

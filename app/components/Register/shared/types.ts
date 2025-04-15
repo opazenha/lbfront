@@ -33,6 +33,7 @@ export interface PlayerFormData {
 }
 
 export interface PartnerFormData {
+  name: string;
   transfermarktUrl: string;
   notes: string;
 }

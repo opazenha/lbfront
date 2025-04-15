@@ -9,6 +9,7 @@ const PartnerRegistrationForm: React.FC<PartnerFormProps> = ({
   loading,
 }) => {
   const [formData, setFormData] = useState({
+    name: "",
     transfermarktUrl: "",
     notes: "",
   });
@@ -80,11 +81,12 @@ const PartnerRegistrationForm: React.FC<PartnerFormProps> = ({
           <label htmlFor="name" className="form-label">
             Name
           </label>
-          <textarea
+          <input
+            type="text"
             id="name"
             name="name"
-            className="form-input form-textarea"
-            value={formData.notes}
+            className="form-input"
+            value={formData.name}
             onChange={handleInputChange}
             placeholder="Add the name of the partner..."
           />
