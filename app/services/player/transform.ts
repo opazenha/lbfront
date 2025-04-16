@@ -1,4 +1,4 @@
-import { Player } from './types';
+import { Player } from "./types";
 
 // Helper function to parse market value strings (e.g., "€450k", "€2.00m") into numbers
 export const parseMarketValue = (
@@ -30,15 +30,17 @@ export const parseMarketValue = (
 export const transformPlayerProfileFromCache = (data: any): Player => {
   console.log("=== TRANSFORMING PLAYER DATA ===");
   console.log("Raw player data:", JSON.stringify(data, null, 2));
-  
+
   // Handle different position formats from the API
   let positionMain = "Unknown";
-  console.log("Position data:", data.position);
+  let positionOther = null;
+  console.log("Main Position data:", data.position.main);
+  console.log("Other Position data:", data.position.other);
   if (data.position) {
-    if (typeof data.position === 'string') {
-      positionMain = data.position;
+    if (typeof data.position === "string") {
+      positionMain = data.position.main;
       console.log(`Position is string: ${positionMain}`);
-    } else if (typeof data.position === 'object') {
+    } else if (typeof data.position === "object") {
       // Handle position as an object with main property
       if (data.position.main) {
         positionMain = data.position.main;
@@ -65,7 +67,7 @@ export const transformPlayerProfileFromCache = (data: any): Player => {
   let age = 0;
   console.log("Age data:", data.age, typeof data.age);
   if (data.age) {
-    age = typeof data.age === 'string' ? parseInt(data.age, 10) : data.age;
+    age = typeof data.age === "string" ? parseInt(data.age, 10) : data.age;
     console.log(`Processed age: ${age}`);
   } else {
     console.log("No age data found");
@@ -75,7 +77,7 @@ export const transformPlayerProfileFromCache = (data: any): Player => {
   let club = undefined;
   console.log("Club data:", data.club);
   if (data.club) {
-    club = typeof data.club === 'string' ? data.club : data.club.name;
+    club = typeof data.club === "string" ? data.club : data.club.name;
     console.log(`Processed club: ${club}`);
   } else {
     console.log("No club data found");
@@ -86,13 +88,17 @@ export const transformPlayerProfileFromCache = (data: any): Player => {
   console.log("Nationality data:", data.nationality);
   console.log("Citizenship data:", data.citizenship);
   if (data.nationality) {
-    if (typeof data.nationality === 'string') {
+    if (typeof data.nationality === "string") {
       nationality = data.nationality;
       console.log(`Nationality from string: ${nationality}`);
     } else if (Array.isArray(data.nationality) && data.nationality.length > 0) {
       nationality = data.nationality[0];
       console.log(`Nationality from array[0]: ${nationality}`);
-    } else if (data.citizenship && Array.isArray(data.citizenship) && data.citizenship.length > 0) {
+    } else if (
+      data.citizenship &&
+      Array.isArray(data.citizenship) &&
+      data.citizenship.length > 0
+    ) {
       nationality = data.citizenship[0];
       console.log(`Nationality from citizenship[0]: ${nationality}`);
     } else {
@@ -110,16 +116,22 @@ export const transformPlayerProfileFromCache = (data: any): Player => {
     description: data.description || undefined,
     age: age,
     position: positionMain,
+    otherPosition: Array.isArray(data.position?.other) ? data.position.other : [],
     citizenship,
-    nationality: citizenship[0] || '', // used for sorting
-    club: typeof data.club === 'object' ? data.club?.name : data.club,
+    nationality: citizenship[0] || "", // used for sorting
+    club: typeof data.club === "object" ? data.club?.name : data.club,
     marketValue: marketValueString,
     marketValueNumber,
     imageUrl: data.imageUrl,
     isLbPlayer: data.isLbPlayer || false,
     transfermarktUrl: data.url || undefined,
     height: data.height || undefined,
-    contractExpires: (typeof data.club === 'object' ? data.club?.contractExpires : undefined) || data.contractExpires || undefined,
+    contractExpires:
+      (typeof data.club === "object"
+        ? data.club?.contractExpires
+        : undefined) ||
+      data.contractExpires ||
+      undefined,
     dateOfBirth: data.dateOfBirth || undefined,
     placeOfBirth: data.placeOfBirth || undefined,
     foot: data.foot || undefined,
@@ -127,10 +139,10 @@ export const transformPlayerProfileFromCache = (data: any): Player => {
     agentName: data.agent?.name || undefined,
     agentUrl: data.agent?.url || undefined,
     socialMedia: data.socialMedia || undefined,
-    createdAt: typeof data.createdAt === 'string' ? data.createdAt : undefined,
-    updatedAt: typeof data.updatedAt === 'string' ? data.updatedAt : undefined,
+    createdAt: typeof data.createdAt === "string" ? data.createdAt : undefined,
+    updatedAt: typeof data.updatedAt === "string" ? data.updatedAt : undefined,
   };
-  
+
   console.log("Transformed player:", JSON.stringify(player, null, 2));
   return player;
 };

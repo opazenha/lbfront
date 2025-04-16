@@ -12,14 +12,20 @@ const CopyToClipboard: React.FC<CopyToClipboardProps> = ({ player }) => {
     if (!player) return;
 
     const text = `
-Name: ${player.name || "N/A"}
-Transfermarkt Link: ${player.transfermarktUrl || "N/A"}
-Age: ${player.age || "N/A"}
-Position: ${player.position || "N/A"}
-Height: ${player.height || "N/A"}
-Citizenship: ${Array.isArray(player.citizenship) && player.citizenship.length > 0 ? player.citizenship.join(", ") : ""}
-End of Contract: ${player.contractExpires || "N/A"}
-Club: ${player.club || "N/A"}
+Name: ${player.name || "-"}
+Transfermarkt Link: ${player.transfermarktUrl || "-"}
+Age: ${player.age || "-"}
+Main Position: ${player.mainPosition || "-"}
+Other Positions: ${Array.isArray(player.otherPosition) && player.otherPosition.length > 0 ? player.otherPosition.join(", ") : "-"}
+Height: ${player.height || "-"}
+Citizenship: ${
+      Array.isArray(player.citizenship) && player.citizenship.length > 0
+        ? player.citizenship.join(", ")
+        : ""
+    }
+End of Contract: ${player.contractExpires || "-"}
+Club: ${player.club || "-"}
+YouTube: ${player.youtubeUrl || "-"}
     `.trim();
 
     navigator.clipboard

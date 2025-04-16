@@ -5,6 +5,7 @@ export interface Player {
   description?: string;
   age: number | string;
   position: string;
+  otherPosition?: string[];
   citizenship: string[];
   nationality?: string; // Used for sorting only, set to citizenship[0]
   club?: string;

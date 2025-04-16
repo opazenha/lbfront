@@ -13,7 +13,8 @@ const mapPlayerForClipboard = (player: any) => ({
   youtubeUrl: player.youtubeUrl || "",
   partnerId: player.partnerId || "",
   age: player.age,
-  position: player.position,
+  mainPosition: player.position,
+  otherPosition: player.otherPosition,
   height: player.height || "",
   citizenship: player.citizenship,
   contractExpires: player.contractExpires || "",
@@ -141,15 +142,26 @@ const PlayerTable = ({ players, loading }: PlayerTableProps) => {
       <tbody>
         {sortedPlayers.map((player) => (
           <tr key={player.id} className={player.isLbPlayer ? "lb-player" : ""}>
-            <td className="player-name">
-              {renderPlayerImage(player)}
-              <span>
-                {player.name}
-                {player.isLbPlayer && <span className="lb-badge">LB</span>}
-              </span>
+            <td className="player-name player-name-col">
+              <div className="player-name-flex">
+                {renderPlayerImage(player)}
+                <span>
+                  {player.name}
+                  {player.isLbPlayer && <span className="lb-badge">LB</span>}
+                </span>
+              </div>
             </td>
             <td>{player.age}</td>
-            <td>{player.position}</td>
+            <td>
+              <span>{player.position}</span>
+              {Array.isArray(player.otherPosition) && player.otherPosition.length > 0 && (
+                <span className="player-other-positions">
+                  {player.otherPosition.map((pos: string, i: number) => (
+                    <span key={i} className="player-other-position-entry">{pos}</span>
+                  ))}
+                </span>
+              )}
+            </td>
             <td>
               {Array.isArray(player.citizenship) &&
               player.citizenship.length > 0

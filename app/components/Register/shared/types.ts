@@ -15,7 +15,8 @@ export interface Player {
   youtubeUrl?: string;
   partnerId?: string;
   age?: number;
-  position?: string;
+  mainPosition?: string;
+  otherPosition?: string[];
   height?: string;
   citizenship?: string[];
   contractExpires?: string;
