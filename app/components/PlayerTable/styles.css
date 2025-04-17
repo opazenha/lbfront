@@ -60,6 +60,7 @@
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: bold;
+  margin-left: 8px;
 }
 
 .player-other-positions {
@@ -75,11 +76,7 @@
 }
 
 .player-name-col {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  vertical-align: bottom;
-  padding-bottom: 0;
+  display: table-cell;
   text-align: left;
 }
 
@@ -98,12 +95,6 @@
 .player-table tr:last-child td {
   border-bottom: none;
 }
-
-
-.player-table td {
-  height: 100%;
-}
-
 
 .market-value {
   font-family: monospace;
@@ -177,6 +168,20 @@
   background: #3c703c;
 }
 
+/* Style Share button */
+.copy-button {
+  padding: 4px 8px;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+  background: rgba(255, 193, 7, 0.1);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.copy-button:hover:enabled {
+  background: rgba(255, 193, 7, 0.2);
+}
+
 .empty-state {
   text-align: center;
   padding: 48px 24px;
@@ -210,4 +215,10 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Fix name column height and border alignment */
+.player-table td.player-name-col {
+  display: table-cell !important;
+  height: auto !important;
 }

@@ -159,7 +159,7 @@ const PlayerFilter = ({ onSubmit, loading, availablePositions = [] }: PlayerFilt
             </div>
           </div>
           
-          <div className="filter-group">
+          <div className="filter-group filter-checkbox-group">
             <label className="checkbox-label">
               <input
                 type="checkbox"

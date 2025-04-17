@@ -81,3 +81,23 @@
 .reset-btn:hover {
   background: var(--surface-hover);
 }
+
+/* Span LB checkbox across full width */
+.filter-checkbox-group {
+  grid-column: 1 / -1;
+}
+
+/* Style submit button */
+.submit-btn {
+  padding: 8px 16px;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+  background: rgba(255, 193, 7, 0.1);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.submit-btn:hover:enabled {
+  background: rgba(255, 193, 7, 0.2);
+}
