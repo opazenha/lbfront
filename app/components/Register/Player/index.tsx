@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import CopyToClipboard from "../shared/CopyToClipboard";
-import { Partner, Player, PlayerFormProps } from "../shared/types";
+import { Partner, PlayerFormProps } from "../shared/types";
 import "./styles.css";
 
 const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
@@ -47,7 +47,8 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
         }));
         setPartners(partners);
         setFilteredPartners(partners);
-      } catch (err) {
+      } catch {
+
         setPartners([]);
         setFilteredPartners([]);
       }
@@ -78,9 +79,13 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
     setPartnerSearch(search);
 
     // Filter partners based on search text
-    const filtered = partners.filter((partner) =>
-      partner.name.toLowerCase().includes(search.toLowerCase())
-    );
+    const filtered = partners.filter((partner) => {
+      const partnerName = Array.isArray(partner.name) ? partner.name.join(' ') : partner.name;
+      return typeof partnerName === 'string' &&
+        partnerName.toLowerCase().includes(
+          typeof search === 'string' ? search.toLowerCase() : ''
+        );
+    });
     setFilteredPartners(filtered);
     setShowPartnerDropdown(true);
 
@@ -150,7 +155,8 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
         }));
         setPartners(partners);
         setFilteredPartners(partners);
-      } catch (err) {
+      } catch {
+
         setPartners([]);
         setFilteredPartners([]);
       }
@@ -290,7 +296,7 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
 
               <div className="data-item">
                 <div className="data-label">Position</div>
-                <div className="data-value">{scrapedData.position}</div>
+                <div className="data-value">{scrapedData.mainPosition}</div>
               </div>
 
               <div className="data-item">

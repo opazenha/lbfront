@@ -5,14 +5,17 @@ import CopyToClipboard from "../Register/shared/CopyToClipboard";
 import "./styles.css";
 import { PlayerTableProps, SortDirection, SortField } from "./types";
 
-const mapPlayerForClipboard = (player: any) => ({
+import Image from 'next/image';
+import { Player } from "./types";
+
+const mapPlayerForClipboard = (player: Player) => ({
   id: player.id,
   name: player.name,
   transfermarktUrl: player.transfermarktUrl || "",
   notes: player.notes || "",
   youtubeUrl: player.youtubeUrl || "",
   partnerId: player.partnerId || "",
-  age: player.age,
+  age: typeof player.age === 'number' ? player.age : (typeof player.age === 'string' ? parseInt(player.age, 10) || undefined : undefined),
   mainPosition: player.position,
   otherPosition: player.otherPosition,
   height: player.height || "",
@@ -49,13 +52,13 @@ const PlayerTable = ({ players, loading }: PlayerTableProps) => {
       }
 
       // For other fields
-      let aVal: any, bVal: any;
+      let aVal: string | number = '', bVal: string | number = '';
       if (sortField === "nationality") {
-        aVal = Array.isArray(a.citizenship) ? a.citizenship[0] || "" : "";
-        bVal = Array.isArray(b.citizenship) ? b.citizenship[0] || "" : "";
+        aVal = Array.isArray(a.citizenship) && a.citizenship[0] ? a.citizenship[0] : '';
+        bVal = Array.isArray(b.citizenship) && b.citizenship[0] ? b.citizenship[0] : '';
       } else {
-        aVal = a[sortField];
-        bVal = b[sortField];
+        aVal = (a[sortField] !== undefined && a[sortField] !== null) ? a[sortField] as string | number : (typeof a[sortField] === 'number' ? 0 : '');
+        bVal = (b[sortField] !== undefined && b[sortField] !== null) ? b[sortField] as string | number : (typeof b[sortField] === 'number' ? 0 : '');
       }
 
       // Handle string comparison
@@ -75,10 +78,10 @@ const PlayerTable = ({ players, loading }: PlayerTableProps) => {
   }, [players, sortField, sortDirection]);
 
   // Helper function to render player image or placeholder
-  const renderPlayerImage = (player: any) => {
+  const renderPlayerImage = (player: Player) => {
     if (player.imageUrl) {
       return (
-        <img src={player.imageUrl} alt={player.name} className="player-image" />
+        <Image src={player.imageUrl} alt={player.name} className="player-image" width={40} height={40} />
       );
     } else {
       // Create placeholder with first letter of name
@@ -140,7 +143,7 @@ const PlayerTable = ({ players, loading }: PlayerTableProps) => {
         </tr>
       </thead>
       <tbody>
-        {sortedPlayers.map((player) => (
+        {sortedPlayers.map((player: Player) => (
           <tr key={player.id} className={player.isLbPlayer ? "lb-player" : ""}>
             <td className="player-name player-name-col">
               <div className="player-name-flex">
@@ -156,7 +159,7 @@ const PlayerTable = ({ players, loading }: PlayerTableProps) => {
               <span>{player.position}</span>
               {Array.isArray(player.otherPosition) && player.otherPosition.length > 0 && (
                 <span className="player-other-positions">
-                  {player.otherPosition.map((pos: string, i: number) => (
+                  {player.otherPosition?.map((pos: string, i: number) => (
                     <span key={i} className="player-other-position-entry">{pos}</span>
                   ))}
                 </span>

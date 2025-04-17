@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import PlayerRegistrationForm from './Player';
 import PartnerRegistrationForm from './Partner';
-import { RegistrationMode, PlayerFormData, PartnerFormData, Player, Partner } from './shared/types';
+import { RegistrationMode, PlayerFormData, PartnerFormData, Player } from './shared/types';
 import { registerPlayer, registerPartner } from '../../services/register/api';
 import './styles.css';
 

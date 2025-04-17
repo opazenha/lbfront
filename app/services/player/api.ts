@@ -99,7 +99,7 @@ export const getPlayers = async (filters: PlayerFilters = {}): Promise<Player[]>
     console.log(`API returned ${playerData.length} players - using real data`);
     console.log(`Transforming ${playerData.length} players from API`);
     
-    const players = playerData.map((player: any) => {
+    const players = playerData.map((player: Player) => {
       try {
         return transformPlayerProfileFromCache(player);
       } catch (error) {

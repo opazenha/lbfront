@@ -6,7 +6,7 @@ interface CacheItem<T> {
 }
 
 class ApiCache {
-  private cache: Record<string, CacheItem<any>> = {};
+  private cache: Record<string, CacheItem<unknown>> = {};
   private readonly DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
 
   get<T>(key: string): T | null {
@@ -22,7 +22,7 @@ class ApiCache {
       return null;
     }
 
-    return item.data;
+    return item.data as T;
   }
 
   set<T>(key: string, data: T, ttl: number = this.DEFAULT_TTL): void {

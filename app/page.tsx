@@ -1,15 +1,42 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import MainLayout from "./components/MainLayout";
 import PlayerFilter from "./components/PlayerFilter";
 import PlayerTable from "./components/PlayerTable";
-import { Player } from "./services/player/types";
+import { Player as ServicePlayer } from "./services/player/types";
+
+
+type Player = ServicePlayer & {
+  citizenship: string[];
+  nationality?: string;
+};
 import { checkApiAvailability, getPlayers } from "./services/player/api";
 
 export default function Home() {
+  const [filters, setFilters] = useState<Record<string, string>>({});
   // All players fetched from API
   const [allPlayers, setAllPlayers] = useState<Player[]>([]);
+
+  // Normalize player shape for table compatibility
+  function normalizePlayer(player: ServicePlayer): Player {
+    const citizenship = typeof player.nationality === 'string'
+      ? player.nationality.split('/').map(s => s.trim()).filter(Boolean)
+      : Array.isArray(player.nationality)
+      ? player.nationality
+      : [];
+    return {
+      ...player,
+      citizenship,
+      nationality: citizenship[0] || '',
+      placeOfBirth: player.placeOfBirth
+        ? {
+            city: player.placeOfBirth.city || '',
+            country: player.placeOfBirth.country || '',
+          }
+        : { city: '', country: '' },
+    };
+  }
 
   // Players after applying filters
   const [filteredPlayers, setFilteredPlayers] = useState<Player[]>([]);
@@ -31,7 +58,7 @@ export default function Home() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  // const [filters, setFilters] = useState<Record<string, string>>({}); // Removed unused variable
   const [apiStatus, setApiStatus] = useState<
     "connected" | "disconnected" | "checking"
   >("checking");
@@ -53,12 +80,13 @@ export default function Home() {
           console.log("No players received from getPlayers()");
         }
         
-        setAllPlayers(data);
+        const normalized = data.map(normalizePlayer);
+        setAllPlayers(normalized);
         console.log("Set allPlayers state with data");
         
         // Set filtered and displayed players to show all players initially
-        setFilteredPlayers(data);
-        setDisplayedPlayers(data.slice(0, PLAYERS_PER_PAGE));
+        setFilteredPlayers(normalized);
+        setDisplayedPlayers(normalized.slice(0, PLAYERS_PER_PAGE));
         console.log(`Displaying initial ${Math.min(data.length, PLAYERS_PER_PAGE)} players out of ${data.length}`);
         
         // Mark that a search has been performed so the table is displayed
@@ -117,7 +145,8 @@ export default function Home() {
       const searchName = filters.name.toLowerCase();
       console.log(`Applying name filter: '${searchName}'`);
       filtered = filtered.filter((player) => {
-        const nameMatch = player.name.toLowerCase().includes(searchName);
+        const playerName = Array.isArray(player.name) ? player.name.join(' ') : player.name;
+        const nameMatch = typeof playerName === 'string' && playerName.toLowerCase().includes(searchName);
         if (!nameMatch) {
           console.log(`Player rejected by name filter: ${player.name}`);
         }
@@ -349,7 +378,29 @@ export default function Home() {
         {/* Only show table after search */}
         {hasSearched && (
           <>
-            <PlayerTable players={displayedPlayers} loading={loading} />
+            <PlayerTable
+              players={displayedPlayers.map(player => {
+                const citizenship = Array.isArray(player.citizenship)
+                  ? player.citizenship
+                  : typeof player.nationality === 'string'
+                  ? player.nationality.split('/').map(s => s.trim()).filter(Boolean)
+                  : Array.isArray(player.nationality)
+                  ? player.nationality
+                  : [];
+                return {
+                  ...player,
+                  citizenship,
+                  nationality: citizenship[0] || '',
+                  placeOfBirth: player.placeOfBirth
+                    ? {
+                        city: player.placeOfBirth.city || '',
+                        country: player.placeOfBirth.country || '',
+                      }
+                    : { city: '', country: '' },
+                };
+              })}
+              loading={loading}
+            />
 
             {/* Show load more button if there are more players to display */}
             {displayedPlayers.length < filteredPlayers.length && (
