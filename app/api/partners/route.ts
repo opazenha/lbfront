@@ -47,3 +47,33 @@ export async function POST(request: Request) {
     );
   }
 }
+
+// GET handler for fetching partners list
+export async function GET(request: Request) {
+  try {
+    const response = await fetch(`${API_CONFIG.BACKEND_URL}${API_CONFIG.ENDPOINTS.CACHE_PARTNERS}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      signal: AbortSignal.timeout(5000),
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      console.error(`Partners API request failed with status: ${response.status}`);
+      return NextResponse.json(
+        { error: `Failed to fetch partners. Status: ${response.status}` },
+        { status: response.status }
+      );
+    }
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("Partners API proxy error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch partners" },
+      { status: 500 }
+    );
+  }
+}

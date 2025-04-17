@@ -35,7 +35,7 @@ const API_ENDPOINTS = {
   COMPETITION_SEARCH: "/competitions/search",
   COMPETITION_CLUBS: "/competitions",
 
-  // Cache endpoints (new API)
+  // Cache endpoints
   CACHE_PLAYERS: "/cache/players",
   CACHE_CLUBS: "/cache/clubs",
   CACHE_COMPETITIONS: "/cache/competitions",
