@@ -171,7 +171,7 @@ const PlayerFilter = ({ onSubmit, loading, availablePositions = [] }: PlayerFilt
           </div>
         </div>
 
-        <div className="filter-actions">
+        <div className="filter-actions filter-actions-grid">
           <button 
             type="button" 
             className="reset-btn"

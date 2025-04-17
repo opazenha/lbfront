@@ -7,9 +7,10 @@ import Header from './Header';
 interface MainLayoutProps {
   children: React.ReactNode;
   title: string;
+  serverStatus?: string;
 }
 
-const MainLayout = ({ children, title }: MainLayoutProps) => {
+const MainLayout = ({ children, title, serverStatus }: MainLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const toggleSidebar = () => {
@@ -21,7 +22,7 @@ const MainLayout = ({ children, title }: MainLayoutProps) => {
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
       
       <main className={`main-content ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-        <Header title={title} />
+        <Header title={title} serverStatus={serverStatus} />
         <div className="content-container">
           {children}
         </div>

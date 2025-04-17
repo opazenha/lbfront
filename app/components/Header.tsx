@@ -6,23 +6,45 @@ interface HeaderProps {
   title: string;
 }
 
-const Header = ({ title }: HeaderProps) => {
+interface HeaderProps {
+  title: string;
+  serverStatus?: string;
+}
+
+const Header = ({ title, serverStatus }: HeaderProps) => {
   return (
     <header className="header">
-      <h1>{title}</h1>
-      
+      <div className="header-flex">
+        <h1 className="main-title">{title}</h1>
+        {serverStatus && (
+          <div className={`api-status ${serverStatus}`} style={{marginLeft: 'auto'}}>
+            <span className="status-indicator"></span>
+            <span className="status-text">
+              {serverStatus === "connected"
+                ? "Server Connected"
+                : serverStatus === "disconnected"
+                ? "Using Mock Data"
+                : "Checking Server..."}
+            </span>
+          </div>
+        )}
+      </div>
       <style jsx>{`
         .header {
           background-color: #0a0a0a;
           padding: 16px 24px;
-          color: #f0c14b;
           border-bottom: 1px solid #222;
         }
-        
-        h1 {
+        .header-flex {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .main-title {
           margin: 0;
           font-size: 24px;
           font-weight: 600;
+          color: #ffc107;
         }
       `}</style>
     </header>

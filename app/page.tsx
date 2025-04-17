@@ -319,8 +319,9 @@ export default function Home() {
   };
 
   return (
-    <MainLayout title="LB Sports Management">
+    <MainLayout title="LB Sports Management" serverStatus={apiStatus}>
       <div className="dashboard">
+
         <div className="header-container">
           <div>
             <h2 className="section-title">Player Management</h2>
@@ -337,16 +338,6 @@ export default function Home() {
               <span className="stat-label">LB Players</span>
               <span className="stat-value">
                 {allPlayers.filter((p: Player) => p.isLbPlayer).length}
-              </span>
-            </div>
-            <div className={`api-status ${apiStatus}`}>
-              <span className="status-indicator"></span>
-              <span className="status-text">
-                {apiStatus === "connected"
-                  ? "API Connected"
-                  : apiStatus === "disconnected"
-                  ? "Using Mock Data"
-                  : "Checking API..."}
               </span>
             </div>
           </div>

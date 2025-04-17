@@ -21,7 +21,7 @@ const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
 
   return (
     <div className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
-      <div className="sidebar-header">
+      <div className="sidebar-header sidebar-title">
         <div className="logo-container">
           <Logo size={isOpen ? 40 : 30} />
         </div>
