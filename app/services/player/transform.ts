@@ -32,79 +32,56 @@ export const transformPlayerProfileFromCache = (data: unknown): Player => {
     throw new Error('Invalid data: not an object');
   }
   const obj = data as Record<string, any>;
-  console.log("=== TRANSFORMING PLAYER DATA ===");
-  console.log("Raw player data:", JSON.stringify(data, null, 2));
 
   // Handle different position formats from the API
   let positionMain = "Unknown";
   // Removed unused variable positionOther
-  console.log("Main Position data:", obj.position.main);
-  console.log("Other Position data:", obj.position.other);
   if (obj.position) {
     if (typeof obj.position === "string") {
       positionMain = obj.position;
-      console.log(`Position is string: ${positionMain}`);
     } else if (typeof obj.position === "object" && obj.position.main) {
       positionMain = obj.position.main;
-      console.log(`Position from position.main: ${positionMain}`);
     } else {
-      console.log("Position data exists but is not string or object with main property");
     }
   } else {
-    console.log("No position data found");
   }
 
   // Get the formatted market value string from API (e.g., "€450k", "€2.00m")
   const marketValueString = obj.marketValue || "Unknown";
-  console.log(`Market value string: ${marketValueString}`);
 
   // Parse the market value string into a number for sorting/filtering
   const marketValueNumber = parseMarketValue(marketValueString);
-  console.log(`Parsed market value number: ${marketValueNumber}`);
 
   // Handle different age formats
   let age = 0;
-  console.log("Age data:", obj.age, typeof obj.age);
   if (obj.age) {
     age = typeof obj.age === "string" ? parseInt(obj.age, 10) : obj.age;
-    console.log(`Processed age: ${age}`);
   } else {
-    console.log("No age data found");
   }
 
   // Handle different club formats
   let club = undefined;
-  console.log("Club data:", obj.club);
   if (obj.club) {
     club = typeof obj.club === "string" ? obj.club : obj.club.name;
-    console.log(`Processed club: ${club}`);
   } else {
-    console.log("No club data found");
   }
 
   // Handle different nationality formats
   let nationality = "Unknown";
-  console.log("Nationality data:", obj.nationality);
-  console.log("Citizenship data:", obj.citizenship);
   if (obj.nationality) {
     if (typeof obj.nationality === "string") {
       nationality = obj.nationality;
-      console.log(`Nationality from string: ${nationality}`);
     } else if (Array.isArray(obj.nationality) && obj.nationality.length > 0) {
       nationality = obj.nationality[0];
-      console.log(`Nationality from array[0]: ${nationality}`);
     } else if (
       obj.citizenship &&
       Array.isArray(obj.citizenship) &&
       obj.citizenship.length > 0
     ) {
       nationality = obj.citizenship[0];
-      console.log(`Nationality from citizenship[0]: ${nationality}`);
     } else {
-      console.log("Nationality data exists but couldn't extract nationality");
     }
   } else {
-    console.log("No nationality data found");
   }
 
   const citizenship = Array.isArray(obj.citizenship) ? obj.citizenship : [];

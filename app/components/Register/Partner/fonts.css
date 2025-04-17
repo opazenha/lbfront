@@ -1,0 +1,11 @@
+@font-face {
+  font-family: 'MortendLight';
+  src: url('/fonts/mortend-light.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.form-label, .checkbox-label {
+  font-family: 'MortendLight', Arial, sans-serif;
+}

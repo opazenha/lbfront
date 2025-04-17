@@ -175,7 +175,14 @@ const PlayerTable = ({ players, loading }: PlayerTableProps) => {
             <td className="market-value">{player.marketValue}</td>
             <td>
               <div className="action-buttons">
-                <button className="action-button view">View</button>
+                <a
+  href={player.transfermarktUrl}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="action-button view"
+>
+  View
+</a>
                 <button className="action-button edit">Edit</button>
                 {/* Share button replaced by CopyToClipboard */}
                 <CopyToClipboard player={mapPlayerForClipboard(player)} />

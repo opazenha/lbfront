@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from "react";
 import CopyToClipboard from "../shared/CopyToClipboard";
 import { Partner, PlayerFormProps } from "../shared/types";
-import "./styles.css"; // disabled for zoom-error testing
+import "./fonts.css";
+import "./styles.css";
 
 const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
   onSubmit,
@@ -48,7 +49,6 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
         setPartners(partners);
         setFilteredPartners(partners);
       } catch {
-
         setPartners([]);
         setFilteredPartners([]);
       }
@@ -80,11 +80,15 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
 
     // Filter partners based on search text
     const filtered = partners.filter((partner) => {
-      const partnerName = Array.isArray(partner.name) ? partner.name.join(' ') : partner.name;
-      return typeof partnerName === 'string' &&
-        partnerName.toLowerCase().includes(
-          typeof search === 'string' ? search.toLowerCase() : ''
-        );
+      const partnerName = Array.isArray(partner.name)
+        ? partner.name.join(" ")
+        : partner.name;
+      return (
+        typeof partnerName === "string" &&
+        partnerName
+          .toLowerCase()
+          .includes(typeof search === "string" ? search.toLowerCase() : "")
+      );
     });
     setFilteredPartners(filtered);
     setShowPartnerDropdown(true);
@@ -156,7 +160,6 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
         setPartners(partners);
         setFilteredPartners(partners);
       } catch {
-
         setPartners([]);
         setFilteredPartners([]);
       }
@@ -253,7 +256,7 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
               onClick={fetchPlayerData}
               disabled={fetchingData}
             >
-              {fetchingData ? "Fetching..." : "Fetch Data"}
+              {fetchingData ? "Loading..." : "Get Information"}
             </button>
           </div>
           {validationErrors.transfermarktUrl && (
@@ -272,7 +275,7 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
 
         {scrapedData && (
           <div className="scraped-data">
-            <h3 className="scraped-data-title">Scraped Player Data</h3>
+            <h3 className="scraped-data-title">Player Information</h3>
             <div className="scraped-data-grid">
               {scrapedData.imageUrl && (
                 <div className="data-item">

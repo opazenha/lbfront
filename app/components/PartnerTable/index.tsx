@@ -35,9 +35,14 @@ const PartnerTable: React.FC<PartnerTableProps> = ({ partners, loading }) => {
             <td>{p.notes || '-'}</td>
             <td>
               {p.transfermarktUrl ? (
-                <a href={p.transfermarktUrl} target="_blank" rel="noreferrer">
-                  Link
-                </a>
+                <a
+  href={p.transfermarktUrl}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="action-button view"
+>
+  View
+</a>
               ) : (
                 '-'
               )}
