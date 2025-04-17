@@ -1,0 +1,110 @@
+@font-face {
+  font-family: 'MBFont';
+  src: url('/fonts/mb.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'MortendRegular';
+  src: url('/fonts/mortend-regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.sidebar {
+  background-color: #0a0a0a;
+  height: 100vh;
+  transition: width 0.3s ease;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.open {
+  width: 240px;
+}
+
+.closed {
+  width: 60px;
+}
+
+.sidebarHeader {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #222;
+  height: 70px;
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.toggleBtn {
+  background: none;
+  border: none;
+  color: #f0c14b;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.toggleBtn:hover {
+  background-color: #222;
+}
+
+.sidebarNav {
+  padding: 16px 0;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.navList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  color: #ededed;
+  text-decoration: none;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.navLink:hover {
+  background-color: #222;
+}
+
+.navIcon {
+  margin-right: 12px;
+  color: #f0c14b;
+  font-size: 18px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.navText {
+  font-size: 14px;
+  font-family: 'MortendRegular';
+  color: #ededed;
+  border-bottom: 1px solid currentColor;
+}
+
+.activeText {
+  font-family: 'MBFont';
+  color: #f0c14b;
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import Sidebar from './Sidebar';
+import Sidebar from './Sidebar/Sidebar';
 import Header from './Header';
 
 interface MainLayoutProps {
