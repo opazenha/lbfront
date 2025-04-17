@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { PartnerFormProps } from "../shared/types";
-import "./styles.css";
+import "./styles.css"; // restored CSS import
 
 const PartnerRegistrationForm: React.FC<PartnerFormProps> = ({
   onSubmit,

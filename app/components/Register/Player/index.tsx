@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import CopyToClipboard from "../shared/CopyToClipboard";
 import { Partner, PlayerFormProps } from "../shared/types";
-import "./styles.css";
+import "./styles.css"; // disabled for zoom-error testing
 
 const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
   onSubmit,

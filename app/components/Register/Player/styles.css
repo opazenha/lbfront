@@ -6,25 +6,25 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.form-title {
+.player-form .form-title {
   color: #ffc107;
   margin-bottom: 24px;
   font-weight: 600;
   font-size: 1.5rem;
 }
 
-.form-group {
+.player-form .form-group {
   margin-bottom: 20px;
 }
 
-.form-label {
+.player-form .form-label {
   display: block;
   margin-bottom: 8px;
   color: #e0e0e0;
   font-weight: 500;
 }
 
-.form-input {
+.player-form .form-input {
   width: 100%;
   padding: 10px 14px;
   background: #2a2a30;
@@ -35,24 +35,24 @@
   transition: border-color 0.3s;
 }
 
-.form-input:focus {
+.player-form .form-input:focus {
   outline: none;
   border-color: #ffc107;
 }
 
-.form-textarea {
+.player-form .form-textarea {
   min-height: 120px;
   resize: vertical;
 }
 
-.form-actions {
+.player-form .form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
   margin-top: 24px;
 }
 
-.form-button {
+.player-form .form-button {
   padding: 10px 20px;
   border: none;
   border-radius: 6px;
@@ -61,22 +61,28 @@
   transition: background-color 0.2s;
 }
 
-.primary-button {
+.player-form .primary-button {
   background: #ffc107;
   color: #000000;
 }
 
-.primary-button:hover {
+.player-form .primary-button:hover {
   background: #e5ad06;
 }
 
-.secondary-button {
+.player-form .secondary-button {
   background: #3a3a42;
   color: #ffffff;
 }
 
-.secondary-button:hover {
+.player-form .secondary-button:hover {
   background: #4a4a52;
+}
+
+.player-form .error-message {
+  color: #e57373;
+  font-size: 0.875rem;
+  margin-top: 4px;
 }
 
 /* Scraped data display */
@@ -114,7 +120,8 @@
   font-weight: 500;
 }
 
-.player-image {
+/* Scoped to form */
+.player-form .player-image {
   width: 120px;
   height: 120px;
   border-radius: 50%;
@@ -147,7 +154,8 @@
   }
 }
 
-.copy-button {
+/* Scoped to form */
+.player-form .copy-button {
   background: #2c602c;
   color: white;
   border: none;
@@ -159,11 +167,11 @@
   margin-top: 16px;
 }
 
-.copy-button:hover {
+.player-form .copy-button:hover {
   background: #3c703c;
 }
 
-.copy-button:disabled {
+.player-form .copy-button:disabled {
   background: #3a3a42;
   cursor: not-allowed;
 }
@@ -208,10 +216,4 @@
 
 .partner-option.selected {
   background: rgba(255, 193, 7, 0.1);
-}
-
-.error-message {
-  color: #e57373;
-  font-size: 0.875rem;
-  margin-top: 4px;
 }
