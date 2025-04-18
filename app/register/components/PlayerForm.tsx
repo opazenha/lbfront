@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import CopyToClipboard from "../shared/CopyToClipboard";
-import { Partner, PlayerFormProps } from "../shared/types";
-import "./fonts.css";
+import CopyToClipboard from "./shared/CopyToClipboard";
+import { Partner, PlayerFormProps } from "./shared/types";
+import "./PlayerForm.fonts.css";
 import "./styles.css";
+import "./PlayerForm.css";
 
 const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
   onSubmit,
@@ -110,9 +111,7 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
   const selectPartner = async (partner: Partner) => {
     if (partner.id === "new") {
       // Register new partner
-      const { registerPartner } = await import(
-        "../../../services/register/api"
-      );
+      const { registerPartner } = await import("../services/api");
       const newPartner = await registerPartner({
         name: partnerSearch,
         transfermarktUrl: "",
@@ -178,7 +177,7 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
     try {
       // Import dynamically to avoid SSR issues
       const { fetchPlayerDataFromTransfermarkt } = await import(
-        "../../../services/register/api"
+        "../services/api"
       );
 
       // Fetch player data from the Transfermarkt API

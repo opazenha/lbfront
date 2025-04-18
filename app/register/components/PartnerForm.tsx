@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { PartnerFormProps } from "../shared/types";
+import { PartnerFormProps } from "./shared/types";
 import "./styles.css";
-import "./fonts.css";
+import "./PartnerForm.fonts.css";
 
 const PartnerRegistrationForm: React.FC<PartnerFormProps> = ({
   onSubmit,

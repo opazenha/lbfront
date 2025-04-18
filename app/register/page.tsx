@@ -1,14 +1,18 @@
 "use client";
 
 import React from 'react';
-import Register from '../components/Register';
+import Register from './components';
 import MainLayout from '../components/MainLayout';
+import './components/styles.css';
+import './components/PlayerForm.css';
+import './components/PlayerForm.fonts.css';
+import './components/PartnerForm.css';
+import './components/PartnerForm.fonts.css';
 
 export default function RegisterPage() {
   return (
     <MainLayout title="Register">
       <div className="register-page">
-        <h1 className="page-title">Register</h1>
         <Register />
       </div>
     </MainLayout>

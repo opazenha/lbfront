@@ -26,15 +26,16 @@ export async function GET(request: Request, { params }: { params: { id: string }
         },
         signal: controller.signal,
       });
-    } catch (err: any) {
-      if (err.name === 'AbortError') {
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') {
         return NextResponse.json(
           { error: 'Upstream API timeout' },
           { status: 504 }
         );
       }
+      const fetchError = err instanceof Error ? err.message : 'Fetch error';
       return NextResponse.json(
-        { error: err.message || 'Fetch error' },
+        { error: fetchError },
         { status: 500 }
       );
     } finally {
@@ -50,11 +51,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     const data = await response.json();
     return NextResponse.json(data);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in player profile API route:', error);
-    return NextResponse.json(
-      { error: error.message || 'Internal Server Error' },
-      { status: 500 }
-    );
+    const message = error instanceof Error ? error.message : 'Internal Server Error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

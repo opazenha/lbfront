@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { apiCache } from '../../../services/player/cache';
+import { apiCache } from '../../../players/services/cache';
 import { API_CONFIG } from '../../../config/apiConfig';
 
 // Rate limiting variables

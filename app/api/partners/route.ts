@@ -49,7 +49,7 @@ export async function POST(request: Request) {
 }
 
 // GET handler for fetching partners list
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const response = await fetch(`${API_CONFIG.BACKEND_URL}${API_CONFIG.ENDPOINTS.CACHE_PARTNERS}`, {
       method: "GET",

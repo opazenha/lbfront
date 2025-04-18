@@ -2,7 +2,7 @@
 
 import React from "react";
 import { PartnerTableProps } from "./types";
-import "../PlayerTable/styles.css";
+import "../../register/components/PlayerForm.css";
 
 const PartnerTable: React.FC<PartnerTableProps> = ({ partners, loading }) => {
   if (loading) {
@@ -19,7 +19,7 @@ const PartnerTable: React.FC<PartnerTableProps> = ({ partners, loading }) => {
   }
 
   return (
-    <table className="player-table">
+    <table className="player-table player-form">
       <thead>
         <tr>
           <th>Name</th>

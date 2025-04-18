@@ -22,7 +22,7 @@ Citizenship: ${Array.isArray(player.citizenship) && player.citizenship.length > 
 End of Contract: ${player.contractExpires || "-"}
 Club: ${player.club || "-"}
 YouTube: ${player.youtubeUrl || "-"}
-    `.trim();
+`.trim();
 
     navigator.clipboard
       .writeText(text)

@@ -2,26 +2,27 @@
 
 import { useEffect, useState } from "react";
 import MainLayout from "./components/MainLayout";
-import PlayerFilter from "./components/PlayerFilter";
-import PlayerTable from "./components/PlayerTable";
-import { Player as ServicePlayer } from "./services/player/types";
+import PlayerFilter from "./players/components/PlayerFilter";
+import PlayerTable from "./players/components/PlayerTable";
+import { Player as ServicePlayer } from "./players/services/types";
+import { checkApiAvailability, getPlayers } from "./players/services/api";
+import { Player as APIPlayer } from "./players/services/types";
 
-
-type Player = ServicePlayer & {
+// UI player extends service data with client-only fields
+type Player = APIPlayer & {
   citizenship: string[];
-  nationality?: string;
+  nationality: string;
+  placeOfBirth: { city: string; country: string };
 };
-import { checkApiAvailability, getPlayers } from "./services/player/api";
 
 export default function Home() {
-  const [filters, setFilters] = useState<Record<string, string>>({});
   // All players fetched from API
   const [allPlayers, setAllPlayers] = useState<Player[]>([]);
 
   // Normalize player shape for table compatibility
   function normalizePlayer(player: ServicePlayer): Player {
     const citizenship = typeof player.nationality === 'string'
-      ? player.nationality.split('/').map(s => s.trim()).filter(Boolean)
+      ? player.nationality.split('/').map((s: string) => s.trim()).filter(Boolean)
       : Array.isArray(player.nationality)
       ? player.nationality
       : [];
@@ -58,7 +59,6 @@ export default function Home() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // const [filters, setFilters] = useState<Record<string, string>>({}); // Removed unused variable
   const [apiStatus, setApiStatus] = useState<
     "connected" | "disconnected" | "checking"
   >("checking");
@@ -282,7 +282,6 @@ export default function Home() {
     console.log("Filters received:", newFilters);
     setLoading(true);
     setError(null);
-    setFilters(newFilters);
 
     try {
       console.log(`Applying filters to ${allPlayers.length} players...`);

@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState } from 'react';
-import PlayerRegistrationForm from './Player';
-import PartnerRegistrationForm from './Partner';
+import PlayerRegistrationForm from './PlayerForm';
+import PartnerRegistrationForm from './PartnerForm';
 import { RegistrationMode, PlayerFormData, PartnerFormData, Player } from './shared/types';
-import { registerPlayer, registerPartner } from '../../services/register/api';
+import { registerPlayer, registerPartner } from '../services/api';
 import './styles.css';
 
 const Register: React.FC = () => {

@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import CopyToClipboard from "../Register/shared/CopyToClipboard";
-import "./styles.css";
+import CopyToClipboard from "../../register/components/shared/CopyToClipboard";
+import "./PlayerTable.css";
 import { PlayerTableProps, SortDirection, SortField } from "./types";
 
 import Image from 'next/image';

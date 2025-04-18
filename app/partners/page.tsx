@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import MainLayout from "../components/MainLayout";
-import PartnerTable from "../components/PartnerTable";
-import { getPartners } from "../services/partner/api";
-import { Partner } from "../services/partner/types";
+import PartnerTable from "./components/PartnerTable";
+import { getPartners } from "./services/api";
+import { Partner } from "./services/types";
 
 const PartnersPage: React.FC = () => {
   const [partners, setPartners] = useState<Partner[]>([]);

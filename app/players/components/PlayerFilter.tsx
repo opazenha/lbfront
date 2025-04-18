@@ -2,7 +2,7 @@
 
 import React, { FormEvent, useState } from "react";
 import { PlayerFilterProps, FilterState } from "./types";
-import "./styles.css";
+import "./PlayerFilter.css";
 
 const PlayerFilter = ({ onSubmit, loading, availablePositions = [] }: PlayerFilterProps) => {
   const [filters, setFilters] = useState<FilterState>({

@@ -28,14 +28,16 @@ export const parseMarketValue = (
 
 // Transform player profile data from the cache endpoint to our internal Player interface
 export const transformPlayerProfileFromCache = (data: unknown): Player => {
+  // Ensure data is object before casting
   if (typeof data !== 'object' || data === null) {
     throw new Error('Invalid data: not an object');
   }
-  const obj = data as Record<string, any>;
+  // Allow raw access via any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const obj: any = data;
 
   // Handle different position formats from the API
   let positionMain = "Unknown";
-  // Removed unused variable positionOther
   if (obj.position) {
     if (typeof obj.position === "string") {
       positionMain = obj.position;
@@ -59,35 +61,17 @@ export const transformPlayerProfileFromCache = (data: unknown): Player => {
   } else {
   }
 
-  // Handle different club formats
-  let club = undefined;
-  if (obj.club) {
-    club = typeof obj.club === "string" ? obj.club : obj.club.name;
-  } else {
-  }
-
-  // Handle different nationality formats
-  let nationality = "Unknown";
-  if (obj.nationality) {
-    if (typeof obj.nationality === "string") {
-      nationality = obj.nationality;
-    } else if (Array.isArray(obj.nationality) && obj.nationality.length > 0) {
-      nationality = obj.nationality[0];
-    } else if (
-      obj.citizenship &&
-      Array.isArray(obj.citizenship) &&
-      obj.citizenship.length > 0
-    ) {
-      nationality = obj.citizenship[0];
-    } else {
-    }
-  } else {
-  }
-
   const citizenship = Array.isArray(obj.citizenship) ? obj.citizenship : [];
   const mainPosition = obj.position?.main || (typeof obj.position === 'string' ? obj.position : undefined) || '';
   const otherPosition = Array.isArray(obj.position?.other) ? obj.position.other : [];
   const player = {
+    youtubeUrl: obj.youtubeUrl || undefined,
+    club:
+      (typeof obj.club === "object"
+        ? obj.club?.name
+        : typeof obj.club === "string"
+        ? obj.club
+        : undefined),
     id: obj.id?.toString() || "",
     name: obj.name || "Unknown",
     fullName: obj.fullName || undefined,
@@ -98,7 +82,6 @@ export const transformPlayerProfileFromCache = (data: unknown): Player => {
     otherPosition, // <-- add for frontend
     citizenship, // <-- add for frontend
     nationality: citizenship[0] || "", // used for sorting
-    club: typeof obj.club === "object" ? obj.club?.name : obj.club,
     marketValue: marketValueString,
     marketValueNumber,
     imageUrl: obj.imageUrl,
