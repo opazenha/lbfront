@@ -299,12 +299,17 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
 
               <div className="data-item">
                 <div className="data-label">Position</div>
-                <div className="data-value">{scrapedData.mainPosition}</div>
+                <div className="data-value">{scrapedData.mainPosition || '-'}</div>
+              </div>
+
+              <div className="data-item">
+                <div className="data-label">Other Positions</div>
+                <div className="data-value">{Array.isArray(scrapedData.otherPosition) && scrapedData.otherPosition.length > 0 ? scrapedData.otherPosition.join(', ') : '-'}</div>
               </div>
 
               <div className="data-item">
                 <div className="data-label">Nationality</div>
-                <div className="data-value">{scrapedData.citizenship}</div>
+                <div className="data-value">{Array.isArray(scrapedData.citizenship) ? scrapedData.citizenship.join(', ') : scrapedData.citizenship || '-'}</div>
               </div>
 
               <div className="data-item">

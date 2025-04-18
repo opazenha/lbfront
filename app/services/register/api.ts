@@ -84,12 +84,12 @@ export const fetchPlayerDataFromTransfermarkt = async (
       name: data.name || "Unknown",
       transfermarktUrl: transfermarktUrl,
       age: data.age || null,
-      position: data.position?.main || "Unknown",
+      mainPosition: data.position?.main || undefined,
+      otherPosition: Array.isArray(data.position?.other) ? data.position.other : [],
       height: data.height || null,
-      weight: data.weight || null,
-      nationality: data.citizenship?.[0] || data.nationality?.name || "Unknown",
-      club: data.club?.name || null,
+      citizenship: Array.isArray(data.citizenship) ? data.citizenship : [],
       contractExpires: data.club?.contractExpires || null,
+      club: data.club?.name || null,
       imageUrl: data.imageUrl || null,
     };
 
@@ -162,12 +162,13 @@ export const registerPlayer = async (playerData: {
       youtubeUrl: playerData.youtubeUrl,
       partnerId: playerData.partnerId,
       age: registeredPlayer.age,
-      position: registeredPlayer.position?.main,
+      mainPosition: registeredPlayer.position?.main || undefined,
+      otherPosition: Array.isArray(registeredPlayer.position?.other) ? registeredPlayer.position.other : [],
       height: registeredPlayer.height,
-      nationality: registeredPlayer.citizenship?.[0],
-      club: registeredPlayer.club?.name,
-      contractExpires: registeredPlayer.club?.contractExpires,
-      imageUrl: registeredPlayer.imageUrl
+      citizenship: Array.isArray(registeredPlayer.citizenship) ? registeredPlayer.citizenship : [],
+      club: registeredPlayer.club?.name || null,
+      contractExpires: registeredPlayer.club?.contractExpires || null,
+      imageUrl: registeredPlayer.imageUrl,
     };
   } catch (error) {
     console.error("Error registering player:", error);

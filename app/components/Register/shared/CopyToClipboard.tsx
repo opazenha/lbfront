@@ -18,11 +18,7 @@ Age: ${player.age || "-"}
 Main Position: ${player.mainPosition || "-"}
 Other Positions: ${Array.isArray(player.otherPosition) && player.otherPosition.length > 0 ? player.otherPosition.join(", ") : "-"}
 Height: ${player.height || "-"}
-Citizenship: ${
-      Array.isArray(player.citizenship) && player.citizenship.length > 0
-        ? player.citizenship.join(", ")
-        : ""
-    }
+Citizenship: ${Array.isArray(player.citizenship) && player.citizenship.length > 0 ? player.citizenship.join(", ") : "-"}
 End of Contract: ${player.contractExpires || "-"}
 Club: ${player.club || "-"}
 YouTube: ${player.youtubeUrl || "-"}

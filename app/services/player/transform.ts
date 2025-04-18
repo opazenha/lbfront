@@ -85,6 +85,8 @@ export const transformPlayerProfileFromCache = (data: unknown): Player => {
   }
 
   const citizenship = Array.isArray(obj.citizenship) ? obj.citizenship : [];
+  const mainPosition = obj.position?.main || (typeof obj.position === 'string' ? obj.position : undefined) || '';
+  const otherPosition = Array.isArray(obj.position?.other) ? obj.position.other : [];
   const player = {
     id: obj.id?.toString() || "",
     name: obj.name || "Unknown",
@@ -92,8 +94,9 @@ export const transformPlayerProfileFromCache = (data: unknown): Player => {
     description: obj.description || undefined,
     age: age,
     position: positionMain,
-    otherPosition: Array.isArray(obj.position?.other) ? obj.position.other : [],
-    citizenship,
+    mainPosition, // <-- add for frontend
+    otherPosition, // <-- add for frontend
+    citizenship, // <-- add for frontend
     nationality: citizenship[0] || "", // used for sorting
     club: typeof obj.club === "object" ? obj.club?.name : obj.club,
     marketValue: marketValueString,
