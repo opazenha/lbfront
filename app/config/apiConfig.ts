@@ -8,7 +8,7 @@ const API_BASE_URL = "/api";
 // The actual backend API URL (used by the Next.js API routes to proxy requests)
 // This should be the only place where the actual backend URL is defined
 const BACKEND_API_URL =
-  process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://localhost:7771";
+  process.env.NEXT_PUBLIC_BACKEND_API_URL || "192.9.133.211:7771";
 
 // Allow for fallback to mock data if API is unavailable
 const USE_MOCK_DATA_IF_API_DOWN =

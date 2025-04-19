@@ -7,6 +7,7 @@ import { PlayerTableProps, SortDirection, SortField } from "./types";
 
 import Image from 'next/image';
 import { Player } from "./types";
+import { deletePlayerProfile } from "../services/api";
 
 const mapPlayerForClipboard = (player: Player) => ({
   id: player.id,
@@ -37,6 +38,16 @@ const PlayerTable = ({ players, loading }: PlayerTableProps) => {
       // Default to ascending for new sort field
       setSortField(field);
       setSortDirection("asc");
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this player?")) return;
+    const success = await deletePlayerProfile(id);
+    if (success) {
+      window.location.reload();
+    } else {
+      alert("Failed to delete player.");
     }
   };
 
@@ -183,7 +194,7 @@ const PlayerTable = ({ players, loading }: PlayerTableProps) => {
 >
   View
 </a>
-                <button className="action-button edit">Edit</button>
+                <button className="action-button delete" onClick={() => handleDelete(player.id)}>Delete</button>
                 {/* Share button replaced by CopyToClipboard */}
                 <CopyToClipboard player={mapPlayerForClipboard(player)} />
               </div>

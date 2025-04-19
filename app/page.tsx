@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import MainLayout from "./components/MainLayout";
 import PlayerFilter from "./players/components/PlayerFilter";
 import PlayerTable from "./players/components/PlayerTable";
-import { Player as ServicePlayer } from "./players/services/types";
 import { checkApiAvailability, getPlayers } from "./players/services/api";
-import { Player as APIPlayer } from "./players/services/types";
+import {
+  Player as APIPlayer,
+  Player as ServicePlayer,
+} from "./players/services/types";
 
 // UI player extends service data with client-only fields
 type Player = APIPlayer & {
@@ -21,21 +23,25 @@ export default function Home() {
 
   // Normalize player shape for table compatibility
   function normalizePlayer(player: ServicePlayer): Player {
-    const citizenship = typeof player.nationality === 'string'
-      ? player.nationality.split('/').map((s: string) => s.trim()).filter(Boolean)
-      : Array.isArray(player.nationality)
-      ? player.nationality
-      : [];
+    const citizenship =
+      typeof player.nationality === "string"
+        ? player.nationality
+            .split("/")
+            .map((s: string) => s.trim())
+            .filter(Boolean)
+        : Array.isArray(player.nationality)
+        ? player.nationality
+        : [];
     return {
       ...player,
       citizenship,
-      nationality: citizenship[0] || '',
+      nationality: citizenship[0] || "",
       placeOfBirth: player.placeOfBirth
         ? {
-            city: player.placeOfBirth.city || '',
-            country: player.placeOfBirth.country || '',
+            city: player.placeOfBirth.city || "",
+            country: player.placeOfBirth.country || "",
           }
-        : { city: '', country: '' },
+        : { city: "", country: "" },
     };
   }
 
@@ -66,38 +72,41 @@ export default function Home() {
   // Load initial data on component mount
   useEffect(() => {
     const loadInitialData = async () => {
-      console.log("=== STARTING INITIAL DATA LOAD ===");
+      // console.log("=== STARTING INITIAL DATA LOAD ===");
       setLoading(true);
       setApiStatus("checking");
       try {
         // Fetch all players but don't display them yet
-        console.log("Calling getPlayers() to fetch player data...");
+        // console.log("Calling getPlayers() to fetch player data...");
         const data = await getPlayers();
-        console.log(`Received ${data?.length || 0} players from getPlayers():`);
+        // console.log(`Received ${data?.length || 0} players from getPlayers():`);
         if (data?.length > 0) {
-          console.log("First player sample:", JSON.stringify(data[0], null, 2));
+          // console.log("First player sample:", JSON.stringify(data[0], null, 2));
         } else {
-          console.log("No players received from getPlayers()");
+          // console.log("No players received from getPlayers()");
         }
-        
+
         const normalized = data.map(normalizePlayer);
         setAllPlayers(normalized);
-        console.log("Set allPlayers state with data");
-        
+        // console.log("Set allPlayers state with data");
+
         // Set filtered and displayed players to show all players initially
         setFilteredPlayers(normalized);
         setDisplayedPlayers(normalized.slice(0, PLAYERS_PER_PAGE));
-        console.log(`Displaying initial ${Math.min(data.length, PLAYERS_PER_PAGE)} players out of ${data.length}`);
-        
+        // console.log(`Displaying initial ${Math.min(data.length, PLAYERS_PER_PAGE)} players out of ${data.length}`);
+
         // Mark that a search has been performed so the table is displayed
         setHasSearched(true);
 
         // Get unique positions from players
         console.log("Extracting unique positions from player data...");
-        const positions = Array.from(new Set(data.map(player => {
-          console.log(`Player ${player.name} position: ${player.position}`);
-          return player.position;
-        })));
+        const positions = Array.from(
+          new Set(
+            data.map((player) => {
+              return player.position;
+            })
+          )
+        );
         positions.sort(); // Sort alphabetically
         console.log(`Found ${positions.length} unique positions:`, positions);
         setAvailablePositions(positions);
@@ -105,7 +114,11 @@ export default function Home() {
         // Check if the API is available
         console.log("Checking API availability...");
         const isApiAvailable = await checkApiAvailability();
-        console.log(`API availability check result: ${isApiAvailable ? 'Connected' : 'Disconnected'}`);
+        console.log(
+          `API availability check result: ${
+            isApiAvailable ? "Connected" : "Disconnected"
+          }`
+        );
 
         if (isApiAvailable) {
           setApiStatus("connected");
@@ -122,7 +135,9 @@ export default function Home() {
         console.error("Error loading initial data:", err);
         setApiStatus("disconnected");
         setError("Failed to load player data. Please try again.");
-        console.log("Error caught in loadInitialData, set status to disconnected");
+        console.log(
+          "Error caught in loadInitialData, set status to disconnected"
+        );
       } finally {
         setLoading(false);
       }
@@ -136,7 +151,7 @@ export default function Home() {
     console.log("=== APPLYING FILTERS ===");
     console.log("Starting with all players:", allPlayers.length);
     console.log("Filter criteria:", filters);
-    
+
     let filtered = [...allPlayers];
     console.log("Initial filtered array length:", filtered.length);
 
@@ -145,8 +160,12 @@ export default function Home() {
       const searchName = filters.name.toLowerCase();
       console.log(`Applying name filter: '${searchName}'`);
       filtered = filtered.filter((player) => {
-        const playerName = Array.isArray(player.name) ? player.name.join(' ') : player.name;
-        const nameMatch = typeof playerName === 'string' && playerName.toLowerCase().includes(searchName);
+        const playerName = Array.isArray(player.name)
+          ? player.name.join(" ")
+          : player.name;
+        const nameMatch =
+          typeof playerName === "string" &&
+          playerName.toLowerCase().includes(searchName);
         if (!nameMatch) {
           console.log(`Player rejected by name filter: ${player.name}`);
         }
@@ -157,11 +176,15 @@ export default function Home() {
 
     if (filters.position) {
       console.log(`Applying position filter: '${filters.position}'`);
-      console.log("Available positions in data:", [...new Set(allPlayers.map(p => p.position))]);
+      console.log("Available positions in data:", [
+        ...new Set(allPlayers.map((p) => p.position)),
+      ]);
       filtered = filtered.filter((player) => {
         const positionMatch = player.position === filters.position;
         if (!positionMatch) {
-          console.log(`Player rejected by position filter: ${player.name}, position: ${player.position}`);
+          console.log(
+            `Player rejected by position filter: ${player.name}, position: ${player.position}`
+          );
         }
         return positionMatch;
       });
@@ -172,9 +195,13 @@ export default function Home() {
       const searchNationality = filters.nationality.toLowerCase();
       console.log(`Applying nationality filter: '${searchNationality}'`);
       filtered = filtered.filter((player) => {
-        const nationalityMatch = player.nationality.toLowerCase().includes(searchNationality);
+        const nationalityMatch = player.nationality
+          .toLowerCase()
+          .includes(searchNationality);
         if (!nationalityMatch) {
-          console.log(`Player rejected by nationality filter: ${player.name}, nationality: ${player.nationality}`);
+          console.log(
+            `Player rejected by nationality filter: ${player.name}, nationality: ${player.nationality}`
+          );
         }
         return nationalityMatch;
       });
@@ -187,7 +214,9 @@ export default function Home() {
       filtered = filtered.filter((player) => {
         const clubMatch = player.club?.toLowerCase().includes(searchClub);
         if (!clubMatch) {
-          console.log(`Player rejected by club filter: ${player.name}, club: ${player.club}`);
+          console.log(
+            `Player rejected by club filter: ${player.name}, club: ${player.club}`
+          );
         }
         return clubMatch;
       });
@@ -199,7 +228,9 @@ export default function Home() {
       filtered = filtered.filter((player) => {
         const lbPlayerMatch = player.isLbPlayer === true;
         if (!lbPlayerMatch) {
-          console.log(`Player rejected by LB Player filter: ${player.name}, isLbPlayer: ${player.isLbPlayer}`);
+          console.log(
+            `Player rejected by LB Player filter: ${player.name}, isLbPlayer: ${player.isLbPlayer}`
+          );
         }
         return lbPlayerMatch;
       });
@@ -213,15 +244,22 @@ export default function Home() {
     if (minAge !== undefined || maxAge !== undefined) {
       console.log(`Applying age filter: min=${minAge}, max=${maxAge}`);
       filtered = filtered.filter((player) => {
-        const age = typeof player.age === 'string' ? parseInt(player.age, 10) : player.age;
-        if (typeof age !== 'number' || isNaN(age)) {
-          console.log(`Player rejected by age filter (invalid age): ${player.name}, age: ${player.age}`);
+        const age =
+          typeof player.age === "string"
+            ? parseInt(player.age, 10)
+            : player.age;
+        if (typeof age !== "number" || isNaN(age)) {
+          console.log(
+            `Player rejected by age filter (invalid age): ${player.name}, age: ${player.age}`
+          );
           return false;
         }
         const meetsMin = minAge === undefined || isNaN(minAge) || age >= minAge;
         const meetsMax = maxAge === undefined || isNaN(maxAge) || age <= maxAge;
         if (!meetsMin || !meetsMax) {
-          console.log(`Player rejected by age filter: ${player.name}, age: ${age}, meets min: ${meetsMin}, meets max: ${meetsMax}`);
+          console.log(
+            `Player rejected by age filter: ${player.name}, age: ${age}, meets min: ${meetsMin}, meets max: ${meetsMax}`
+          );
         }
         return meetsMin && meetsMax;
       });
@@ -237,11 +275,15 @@ export default function Home() {
       : undefined;
 
     if (minValue !== undefined || maxValue !== undefined) {
-      console.log(`Applying market value filter: min=${minValue}, max=${maxValue}`);
+      console.log(
+        `Applying market value filter: min=${minValue}, max=${maxValue}`
+      );
       filtered = filtered.filter((player) => {
         const value = player.marketValueNumber;
         if (value === undefined || value === null) {
-          console.log(`Player rejected by market value filter (no value): ${player.name}, market value: ${player.marketValue}`);
+          console.log(
+            `Player rejected by market value filter (no value): ${player.name}, market value: ${player.marketValue}`
+          );
           return false;
         }
         const meetsMin =
@@ -249,16 +291,21 @@ export default function Home() {
         const meetsMax =
           maxValue === undefined || isNaN(maxValue) || value <= maxValue;
         if (!meetsMin || !meetsMax) {
-          console.log(`Player rejected by market value filter: ${player.name}, value: ${value}, meets min: ${meetsMin}, meets max: ${meetsMax}`);
+          console.log(
+            `Player rejected by market value filter: ${player.name}, value: ${value}, meets min: ${meetsMin}, meets max: ${meetsMax}`
+          );
         }
         return meetsMin && meetsMax;
       });
       console.log(`After market value filter: ${filtered.length} players`);
     }
-    
+
     console.log(`Final filtered results: ${filtered.length} players`);
     if (filtered.length > 0) {
-      console.log("Sample of filtered players:", filtered.slice(0, 3).map(p => p.name));
+      console.log(
+        "Sample of filtered players:",
+        filtered.slice(0, 3).map((p) => p.name)
+      );
     }
 
     return filtered;
@@ -287,8 +334,10 @@ export default function Home() {
       console.log(`Applying filters to ${allPlayers.length} players...`);
       // Apply filters to all players
       const filtered = applyFilters(newFilters);
-      console.log(`Filter result: ${filtered.length} players match the criteria`);
-      
+      console.log(
+        `Filter result: ${filtered.length} players match the criteria`
+      );
+
       setFilteredPlayers(filtered);
 
       // Reset pagination
@@ -297,7 +346,9 @@ export default function Home() {
 
       // Show first page of results
       const displayPlayers = filtered.slice(0, PLAYERS_PER_PAGE);
-      console.log(`Setting displayed players: ${displayPlayers.length} players (page 1)`);
+      console.log(
+        `Setting displayed players: ${displayPlayers.length} players (page 1)`
+      );
       setDisplayedPlayers(displayPlayers);
 
       // Mark that a search has been performed
@@ -320,7 +371,6 @@ export default function Home() {
   return (
     <MainLayout title="LB Sports Management" serverStatus={apiStatus}>
       <div className="dashboard">
-
         <div className="header-container">
           <div>
             <h2 className="section-title">Player Management</h2>
@@ -342,7 +392,11 @@ export default function Home() {
           </div>
         </div>
 
-        <PlayerFilter onSubmit={handleSubmit} loading={loading} availablePositions={availablePositions} />
+        <PlayerFilter
+          onSubmit={handleSubmit}
+          loading={loading}
+          availablePositions={availablePositions}
+        />
 
         {error && (
           <div className="error-message">
@@ -369,24 +423,27 @@ export default function Home() {
         {hasSearched && (
           <>
             <PlayerTable
-              players={displayedPlayers.map(player => {
+              players={displayedPlayers.map((player) => {
                 const citizenship = Array.isArray(player.citizenship)
                   ? player.citizenship
-                  : typeof player.nationality === 'string'
-                  ? player.nationality.split('/').map(s => s.trim()).filter(Boolean)
+                  : typeof player.nationality === "string"
+                  ? player.nationality
+                      .split("/")
+                      .map((s) => s.trim())
+                      .filter(Boolean)
                   : Array.isArray(player.nationality)
                   ? player.nationality
                   : [];
                 return {
                   ...player,
                   citizenship,
-                  nationality: citizenship[0] || '',
+                  nationality: citizenship[0] || "",
                   placeOfBirth: player.placeOfBirth
                     ? {
-                        city: player.placeOfBirth.city || '',
-                        country: player.placeOfBirth.country || '',
+                        city: player.placeOfBirth.city || "",
+                        country: player.placeOfBirth.country || "",
                       }
-                    : { city: '', country: '' },
+                    : { city: "", country: "" },
                 };
               })}
               loading={loading}

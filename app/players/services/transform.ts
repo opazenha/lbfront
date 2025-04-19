@@ -105,6 +105,6 @@ export const transformPlayerProfileFromCache = (data: unknown): Player => {
     updatedAt: typeof obj.updatedAt === "string" ? obj.updatedAt : undefined,
   };
 
-  console.log("Transformed player:", JSON.stringify(player, null, 2));
+  // console.log("Transformed player:", JSON.stringify(player, null, 2));
   return player;
 };

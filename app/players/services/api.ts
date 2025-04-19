@@ -114,3 +114,26 @@ export const getPlayerById = async (id: string): Promise<Player | null> => {
     return mockPlayer || null;
   }
 };
+
+// Delete player profile
+export const deletePlayerProfile = async (id: string): Promise<boolean> => {
+  try {
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PLAYER_PROFILE}/${id}/profile`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    if (!response.ok) {
+      console.error(`Failed to delete player profile: status ${response.status}`);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error deleting player profile:", error);
+    return false;
+  }
+};

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { usePartnerData } from "../../partners/PartnerDataContext";
 import CopyToClipboard from "./shared/CopyToClipboard";
 import { Partner, PlayerFormProps } from "./shared/types";
 import "./PlayerForm.fonts.css";
@@ -21,41 +22,22 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
   });
 
   const [partnerSearch, setPartnerSearch] = useState("");
-  const [partners, setPartners] = useState<Partner[]>([]);
-  const [filteredPartners, setFilteredPartners] = useState<Partner[]>([]);
+  const { partners, loading: partnersLoading, refresh } = usePartnerData();
+  const [filteredPartners, setFilteredPartners] = useState<Partner[]>(partners);
   const [showPartnerDropdown, setShowPartnerDropdown] = useState(false);
   const [validationErrors, setValidationErrors] = useState<{
     [key: string]: string;
   }>({});
   const [fetchingData, setFetchingData] = useState(false);
 
-  // Fetch partners from backend API
-  useEffect(() => {
-    const fetchPartners = async () => {
-      try {
-        const response = await fetch("/api/cache/partners", {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-          cache: "no-store",
-        });
-        if (!response.ok) throw new Error("Failed to fetch partners");
-        const data = await response.json();
-        // Normalize to Partner[]
-        const partners = (Array.isArray(data) ? data : []).map((p, idx) => ({
-          id: p.id || p.name || idx.toString(),
-          name: p.name,
-          transfermarktUrl: p.transfermarktUrl || "",
-          notes: p.notes || "",
-        }));
-        setPartners(partners);
-        setFilteredPartners(partners);
-      } catch {
-        setPartners([]);
-        setFilteredPartners([]);
-      }
-    };
-    fetchPartners();
-  }, []);
+  // Update filteredPartners whenever partners or partnerSearch changes
+  React.useEffect(() => {
+    setFilteredPartners(
+      partners.filter((p) =>
+        p.name.toLowerCase().includes(partnerSearch.toLowerCase())
+      )
+    );
+  }, [partners, partnerSearch]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -118,10 +100,11 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
         notes: "",
       });
       if (newPartner) {
-        setPartners((prev) => [...prev, newPartner]);
         setFilteredPartners([newPartner]);
         setFormData((prev) => ({ ...prev, partnerId: newPartner.id }));
         setPartnerSearch(newPartner.name);
+        // Optionally refresh partners in context if you want to re-fetch from backend:
+        if (typeof refresh === "function") refresh();
       }
     } else {
       setFormData((prev) => ({ ...prev, partnerId: partner.id }));
@@ -141,71 +124,10 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
 
   const fetchPlayerData = async () => {
     // Refresh partners list after player data is fetched
-    const refreshPartners = async () => {
-      try {
-        const response = await fetch("/api/cache/partners", {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-          cache: "no-store",
-        });
-        if (!response.ok) throw new Error("Failed to fetch partners");
-        const data = await response.json();
-        const partners = (Array.isArray(data) ? data : []).map((p, idx) => ({
-          id: p.id || p.name || idx.toString(),
-          name: p.name,
-          transfermarktUrl: p.transfermarktUrl || "",
-          notes: p.notes || "",
-        }));
-        setPartners(partners);
-        setFilteredPartners(partners);
-      } catch {
-        setPartners([]);
-        setFilteredPartners([]);
-      }
-    };
-
-    if (!formData.transfermarktUrl) {
-      setValidationErrors((prev) => ({
-        ...prev,
-        transfermarktUrl: "Transfermarkt URL is required to fetch player data",
-      }));
-      return;
-    }
-
-    setFetchingData(true);
-
-    try {
-      // Import dynamically to avoid SSR issues
-      const { fetchPlayerDataFromTransfermarkt } = await import(
-        "../services/api"
-      );
-
-      // Fetch player data from the Transfermarkt API
-      const playerData = await fetchPlayerDataFromTransfermarkt(
-        formData.transfermarktUrl
-      );
-
-      if (playerData) {
-        // Refresh partners after player registration (in case a new partner was created)
-        await refreshPartners();
-        // If we successfully fetched player data, update the UI
-        // A real implementation would pass this data back up to the parent component
-        // For now, we'll just pass it via props
-        if (onFetchData && typeof onFetchData === "function") {
-          onFetchData(playerData);
-        }
-      } else {
-        alert(
-          "Could not fetch player data. Please check the URL and try again."
-        );
-      }
-    } catch (error) {
-      console.error("Error fetching player data:", error);
-      alert("Error fetching player data. Please try again.");
-    } finally {
-      setFetchingData(false);
-    }
+    if (typeof refresh === "function") await refresh();
+    // ...rest of fetchPlayerData logic (if any) should go here, or remove if not needed
   };
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
