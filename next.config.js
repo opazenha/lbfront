@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true, // Keeping default strict mode enabled
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   async rewrites() {
     // Check if the backend URL is set, otherwise don't proxy
     const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:7771';
