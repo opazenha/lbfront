@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { API_CONFIG } from "../../../../config/apiConfig";
 import { apiCache } from "../../../../players/services/cache";
 
@@ -6,12 +6,9 @@ import { apiCache } from "../../../../players/services/cache";
 let lastRequestTime = 0;
 const MIN_REQUEST_INTERVAL = 1000; // 1 second between requests
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, context: any) {
   try {
-    const id = params.id;
+    const id = context.params.id;
     const cacheKey = `cache_player_${id}`;
     const cachedData = apiCache.get(cacheKey);
 
@@ -55,7 +52,7 @@ export async function GET(
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error(`Error in API route /api/cache/player/${params.id}:`, error);
+    console.error(`Error in API route /api/cache/player/${context.params.id}:`, error);
     return NextResponse.json(
       {
         error: "Failed to fetch player from Transfermarkt API",

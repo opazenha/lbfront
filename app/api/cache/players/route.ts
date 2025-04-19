@@ -10,7 +10,7 @@ const CACHE_KEY = "cache_players";
 /**
  * Fetch players from backend and cache the result
  */
-export async function fetchPlayersFromBackend(): Promise<any> {
+async function fetchPlayersFromBackend(): Promise<any> {
   // Rate limiting
   const now = Date.now();
   const timeSinceLastRequest = now - lastRequestTime;
