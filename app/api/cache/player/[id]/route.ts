@@ -52,7 +52,10 @@ export async function GET(request: NextRequest, context: any) {
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error(`Error in API route /api/cache/player/${context.params.id}:`, error);
+    console.error(
+      `Error in API route /api/cache/player/${context.params.id}:`,
+      error
+    );
     return NextResponse.json(
       {
         error: "Failed to fetch player from Transfermarkt API",

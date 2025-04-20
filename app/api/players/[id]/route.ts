@@ -7,12 +7,11 @@ import { API_CONFIG } from '../../../config/apiConfig';
  * GET handler for /api/players/[id] route
  * Acts as a proxy to the actual LB Sports API
  */
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: Request) {
   try {
-    const id = params.id;
+    const url = new URL(request.url);
+    const segments = url.pathname.split('/');
+    const id = segments[segments.length - 1];
     const targetUrl = `${API_CONFIG.BACKEND_URL}/api/players/${id}`;
     
     console.log(`Proxying request to: ${targetUrl}`);
@@ -58,12 +57,11 @@ export async function GET(
 /**
  * DELETE handler for /api/players/[id] route
  */
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: Request) {
   try {
-    const id = params.id;
+    const url = new URL(request.url);
+    const segments = url.pathname.split('/');
+    const id = segments[segments.length - 1];
     const targetUrl = `${API_CONFIG.BACKEND_URL}/api/players/${id}`;
     
     console.log(`Proxying DELETE request to: ${targetUrl}`);

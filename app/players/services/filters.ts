@@ -21,9 +21,16 @@ export const applyFilters = (players: Player[], filters: PlayerFilters): Player[
   // Apply nationality filter
   if (filters.nationality) {
     const searchNationality = filters.nationality.toLowerCase();
-    filtered = filtered.filter((player) =>
-      player.nationality.toLowerCase().includes(searchNationality)
-    );
+    filtered = filtered.filter((player) => {
+      const nat = player.nationality;
+      if (typeof nat === 'string') {
+        return nat.toLowerCase().includes(searchNationality);
+      }
+      if (Array.isArray(nat)) {
+        return nat.some(n => n.toLowerCase().includes(searchNationality));
+      }
+      return false;
+    });
   }
 
   // Apply club filter

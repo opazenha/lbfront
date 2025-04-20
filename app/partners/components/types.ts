@@ -1,4 +1,4 @@
-import { Partner } from "../../services/partner/types";
+import { Partner } from "../services/types";
 
 export interface PartnerTableProps {
   partners: Partner[];

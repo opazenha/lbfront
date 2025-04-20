@@ -1,6 +1,6 @@
 "use client";
 
-import { Partner, Player } from "../../components/Register/shared/types";
+import { Partner, Player } from "../components/shared/types";
 
 /**
  * Extracts player ID from a Transfermarkt URL

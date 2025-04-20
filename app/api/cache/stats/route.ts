@@ -10,7 +10,7 @@ const CACHE_KEY = 'cache_stats';
 /**
  * Fetch stats from backend and cache the result
  */
-export async function fetchStatsFromBackend(): Promise<any> {
+async function fetchStatsFromBackend(): Promise<any> {
   // Rate limiting
   const now = Date.now();
   const timeSinceLastRequest = now - lastRequestTime;

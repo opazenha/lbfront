@@ -46,3 +46,21 @@ export interface PlayerTableProps {
   players: Player[];
   loading: boolean;
 }
+
+export interface FilterState {
+  name: string;
+  position: string;
+  nationality: string;
+  club: string;
+  minAge: string;
+  maxAge: string;
+  minValue: string;
+  maxValue: string;
+  isLbPlayer: boolean;
+}
+
+export interface PlayerFilterProps {
+  onSubmit: (filters: Record<string, string>) => void;
+  loading: boolean;
+  availablePositions?: string[];
+}

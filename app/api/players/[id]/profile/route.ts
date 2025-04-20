@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
-import { NextRequest, NextFetchEvent } from 'next/server';
 import { API_CONFIG } from '../../../../config/apiConfig';
 import { apiCache } from '../../../../players/services/cache';
-import { fetchPlayersFromBackend } from '../../../cache/players/route';
 
 // Use the centralized API configuration
 
@@ -10,9 +8,11 @@ import { fetchPlayersFromBackend } from '../../../cache/players/route';
  * GET handler for /api/players/[id]/profile route
  * Acts as a proxy to the actual Transfermarkt API
  */
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const segments = url.pathname.split('/');
+  const id = segments[segments.length - 2];
   try {
-    const { id } = await params;
     const targetUrl = `${API_CONFIG.BACKEND_URL}/players/${id}/profile`;
     
     console.log(`Proxying request to: ${targetUrl}`);
@@ -62,12 +62,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 // DELETE handler for /api/players/[id]/profile route
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(request: Request) {
+  const url = new URL(request.url);
+  const segments = url.pathname.split('/');
+  const id = segments[segments.length - 2];
   try {
-    const { id } = await params;
     const targetUrl = `${API_CONFIG.BACKEND_URL}/players/${id}/profile`;
     console.log(`Proxying DELETE request to: ${targetUrl}`);
     const controller = new AbortController();
@@ -110,8 +109,6 @@ export async function DELETE(
       );
     }
     apiCache.clear();
-    // Pre-fetch updated player list to repopulate cache
-    await fetchPlayersFromBackend();
     return NextResponse.json(
       { success: true },
       { status: response.status }
