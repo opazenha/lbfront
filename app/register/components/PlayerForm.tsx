@@ -123,9 +123,27 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
   };
 
   const fetchPlayerData = async () => {
-    // Refresh partners list after player data is fetched
-    if (typeof refresh === "function") await refresh();
-    // ...rest of fetchPlayerData logic (if any) should go here, or remove if not needed
+    if (!formData.transfermarktUrl) {
+      setValidationErrors((prev) => ({ ...prev, transfermarktUrl: "Transfermarkt URL is required" }));
+      return;
+    }
+    setFetchingData(true);
+    try {
+      // Dynamically import to avoid circular deps if needed
+      const { fetchPlayerDataFromTransfermarkt } = await import("../services/api");
+      const player = await fetchPlayerDataFromTransfermarkt(formData.transfermarktUrl);
+      if (player) {
+        if (onFetchData) onFetchData(player);
+      } else {
+        alert("Could not fetch player data. Please check the URL or try again later.");
+      }
+    } catch (error) {
+      console.error("Error fetching player data:", error);
+      alert("Failed to fetch player data. Please try again.");
+    } finally {
+      setFetchingData(false);
+      if (typeof refresh === "function") await refresh();
+    }
   };
 
 
