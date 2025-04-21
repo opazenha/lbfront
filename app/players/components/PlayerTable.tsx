@@ -129,80 +129,140 @@ const PlayerTable = ({ players, loading }: PlayerTableProps) => {
   }
 
   return (
-    <table className="player-table">
-      <thead>
-        <tr>
-          <th onClick={() => handleSort("name")}>
-            Player {renderSortIndicator("name")}
-          </th>
-          <th onClick={() => handleSort("age")}>
-            Age {renderSortIndicator("age")}
-          </th>
-          <th onClick={() => handleSort("position")}>
-            Position {renderSortIndicator("position")}
-          </th>
-          <th onClick={() => handleSort("nationality")}>
-            Citizenship {renderSortIndicator("nationality")}
-          </th>
-          <th onClick={() => handleSort("club")}>
-            Club {renderSortIndicator("club")}
-          </th>
-          <th onClick={() => handleSort("marketValue")}>
-            Market Value {renderSortIndicator("marketValue")}
-          </th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {sortedPlayers.map((player: Player) => (
-          <tr key={player.id} className={player.isLbPlayer ? "lb-player" : ""}>
-            <td className="player-name player-name-col">
-              <div className="player-name-flex">
-                {renderPlayerImage(player)}
-                <span>
-                  {player.name}
-                  {player.isLbPlayer && <span className="lb-badge">LB</span>}
-                </span>
-              </div>
-            </td>
-            <td>{player.age}</td>
-            <td>
-              <span>{player.position}</span>
-              {Array.isArray(player.otherPosition) && player.otherPosition.length > 0 && (
-                <span className="player-other-positions">
-                  {player.otherPosition?.map((pos: string, i: number) => (
-                    <span key={i} className="player-other-position-entry">{pos}</span>
-                  ))}
-                </span>
-              )}
-            </td>
-            <td>
-              {Array.isArray(player.citizenship) &&
-              player.citizenship.length > 0
-                ? player.citizenship.join(", ")
-                : player.nationality || ""}
-            </td>
-            <td>{player.club || "N/A"}</td>
-            <td className="market-value">{player.marketValue}</td>
-            <td>
-              <div className="action-buttons">
-                <a
-  href={player.transfermarktUrl}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="action-button view"
->
-  View
-</a>
-                <button className="action-button delete" onClick={() => handleDelete(player.id)}>Delete</button>
-                {/* Share button replaced by CopyToClipboard */}
-                <CopyToClipboard player={mapPlayerForClipboard(player)} />
-              </div>
-            </td>
+    <div className="player-table-wrapper">
+      <table className="player-table">
+        <thead className="desktop-only">
+          <tr>
+            <th onClick={() => handleSort("name")}>
+              Player {renderSortIndicator("name")}
+            </th>
+            <th onClick={() => handleSort("age")}>
+              Age {renderSortIndicator("age")}
+            </th>
+            <th onClick={() => handleSort("position")}>
+              Position {renderSortIndicator("position")}
+            </th>
+            <th onClick={() => handleSort("nationality")}>
+              Citizenship {renderSortIndicator("nationality")}
+            </th>
+            <th onClick={() => handleSort("club")}>
+              Club {renderSortIndicator("club")}
+            </th>
+            <th onClick={() => handleSort("marketValue")}>
+              Market Value {renderSortIndicator("marketValue")}
+            </th>
+            <th>Actions</th>
           </tr>
+        </thead>
+        <tbody>
+          {/* MOBILE: 2 players per row */}
+          {[...Array(Math.ceil(sortedPlayers.length / 2))].map((_, rowIdx) => (
+            <tr className="mobile-only" key={`mobile-row-${rowIdx}`}>
+    {[0, 1].map(colIdx => {
+      const player = sortedPlayers[rowIdx * 2 + colIdx];
+      if (!player) return <td key={`empty-${colIdx}`} className="mobile-player-info" colSpan={1}></td>;
+      return (
+        <td className="mobile-player-info" colSpan={1} key={player.id}>
+  <div className="mobile-card-flex">
+
+          <div className="mobile-row-1">
+  <div className="mobile-player-name-block">
+    {renderPlayerImage(player)}
+    <span className="mobile-player-name-text">{player.name}</span>
+    {player.isLbPlayer && <span className="lb-badge">LB</span>}
+  </div>
+  <div className="mobile-main-position-block">
+    <div className="mobile-main-position">{player.position}</div>
+    {Array.isArray(player.otherPosition) && player.otherPosition.length > 0 && (
+      <div className="mobile-other-positions">
+        {player.otherPosition.map((pos: string, i: number) => (
+          <div className="mobile-other-position-entry" key={i}>{pos}</div>
         ))}
-      </tbody>
-    </table>
+      </div>
+    )}
+  </div>
+</div>
+          <div className="mobile-row-2">
+            <div className="mobile-age-block">
+              <span className="mobile-label">Age:</span>
+              <span className="mobile-value">{player.age}</span>
+            </div>
+            <div className="mobile-citizenship-block">
+              <span className="mobile-label">From:</span>
+              <span className="mobile-value">{Array.isArray(player.citizenship) && player.citizenship.length > 0 ? player.citizenship.join(", ") : player.nationality || ""}</span>
+            </div>
+            <div className="mobile-buttons-block">
+              <span className="mobile-buttons">
+                <a
+                  href={player.transfermarktUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="action-button view large-action-button"
+                >
+                  View
+                </a>
+                <button className="action-button delete large-action-button" onClick={() => handleDelete(player.id)}>Delete</button>
+                <CopyToClipboard player={mapPlayerForClipboard(player)} className="action-button share large-action-button" />
+              </span>
+            </div>
+          </div>
+        </div>
+      </td>
+      );
+    })}
+  </tr>
+))}
+{/* DESKTOP: 1 player per row */}
+{sortedPlayers.map((player: Player) => (
+  <tr key={player.id + "-desktop"} className={player.isLbPlayer ? "lb-player desktop-only" : "desktop-only"}>
+    <td className="player-name player-name-col">
+      <div className="player-name-flex">
+        {renderPlayerImage(player)}
+        <span>
+          {player.name}
+          {player.isLbPlayer && <span className="lb-badge">LB</span>}
+        </span>
+      </div>
+    </td>
+    <td>{player.age}</td>
+    <td>
+      <span>{player.position}</span>
+      {Array.isArray(player.otherPosition) && player.otherPosition.length > 0 && (
+        <span className="player-other-positions">
+          {player.otherPosition?.map((pos: string, i: number) => (
+            <span key={i} className="player-other-position-entry">{pos}</span>
+          ))}
+        </span>
+      )}
+    </td>
+    <td>
+      {Array.isArray(player.citizenship) &&
+      player.citizenship.length > 0
+        ? player.citizenship.join(", ")
+        : player.nationality || ""}
+    </td>
+    <td>{player.club || "N/A"}</td>
+    <td className="market-value">{player.marketValue}</td>
+    <td>
+      <div className="action-buttons">
+        <a
+          href={player.transfermarktUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="action-button view"
+        >
+          View
+        </a>
+        <button className="action-button delete" onClick={() => handleDelete(player.id)}>Delete</button>
+        {/* Share button replaced by CopyToClipboard */}
+        <CopyToClipboard player={mapPlayerForClipboard(player)} />
+      </div>
+    </td>
+  </tr>
+))}
+        </tbody>
+      </table>
+    </div>
   );
 };
 

@@ -108,3 +108,42 @@
   font-family: 'MBFont';
   color: #f0c14b;
 }
+
+/* Mobile: collapse sidebar into top nav */
+@media (max-width: 640px) {
+  .sidebar {
+    width: 100% !important;
+    height: auto;
+    position: relative;
+    flex-direction: row;
+    align-items: center;
+  }
+  .open, .closed {
+    width: auto !important;
+  }
+  .sidebarHeader {
+    display: none;
+  }
+  .sidebarNav {
+    padding: 8px 0;
+    overflow: visible;
+  }
+  .navList {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    margin: 0;
+  }
+  .navItem {
+    margin: 0;
+  }
+  .navLink {
+    padding: 8px;
+  }
+  .toggleBtn {
+    display: none;
+  }
+  .navText {
+    border-bottom: none;
+  }
+}

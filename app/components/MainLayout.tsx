@@ -70,6 +70,19 @@ const MainLayout = ({ children, title, serverStatus }: MainLayoutProps) => {
           position: relative;
           z-index: 1;
         }
+        
+        @media (max-width: 640px) {
+          .layout {
+            flex-direction: column;
+          }
+          .main-content {
+            margin-left: 0 !important;
+            width: 100%;
+          }
+          .content-container {
+            padding: 16px;
+          }
+        }
       `}</style>
     </div>
   );

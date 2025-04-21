@@ -371,7 +371,7 @@ export default function Home() {
   return (
     <MainLayout title="LB Sports Management" serverStatus={apiStatus}>
       <div className="dashboard">
-        <div className="header-container">
+        <div className="header-container hide-on-mobile">
           <div>
             <h2 className="section-title">Player Management</h2>
             <p className="section-description">

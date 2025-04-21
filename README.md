@@ -1,4 +1,4 @@
-# LB Front
+# LB SPORTS Frontend
 
 LB Front is a soccer player management application developed for **LB Sports Company**. It provides tools to search, filter, and view detailed player information by integrating with the Transfermarkt API.
 

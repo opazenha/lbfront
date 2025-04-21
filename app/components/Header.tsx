@@ -46,6 +46,11 @@ const Header = ({ title, serverStatus }: HeaderProps) => {
           font-weight: 600;
           color: #ffc107;
         }
+        @media (max-width: 640px) {
+          .header {
+            display: none;
+          }
+        }
       `}</style>
     </header>
   );

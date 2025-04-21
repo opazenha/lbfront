@@ -5,9 +5,10 @@ import { Player } from "./types";
 
 interface CopyToClipboardProps {
   player: Player;
+  className?: string;
 }
 
-const CopyToClipboard: React.FC<CopyToClipboardProps> = ({ player }) => {
+const CopyToClipboard: React.FC<CopyToClipboardProps> = ({ player, className }) => {
   const copyToClipboard = () => {
     if (!player) return;
 
@@ -37,7 +38,7 @@ YouTube: ${player.youtubeUrl || "-"}
 
   return (
     <button
-      className="copy-button"
+      className={"copy-button" + (typeof className === 'string' ? ` ${className}` : "")}
       onClick={copyToClipboard}
       disabled={!player}
     >
