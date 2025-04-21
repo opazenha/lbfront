@@ -101,13 +101,13 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
       });
       if (newPartner) {
         setFilteredPartners([newPartner]);
-        setFormData((prev) => ({ ...prev, partnerId: newPartner.id }));
+        setFormData((prev) => ({ ...prev, partnerId: newPartner.name }));
         setPartnerSearch(newPartner.name);
         // Optionally refresh partners in context if you want to re-fetch from backend:
         if (typeof refresh === "function") refresh();
       }
     } else {
-      setFormData((prev) => ({ ...prev, partnerId: partner.id }));
+      setFormData((prev) => ({ ...prev, partnerId: partner.name }));
       setPartnerSearch(partner.name);
     }
     setShowPartnerDropdown(false);
@@ -153,6 +153,8 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
     // Validate form
     const errors: { [key: string]: string } = {};
 
+    console.log('[PlayerForm] handleSubmit - formData:', formData);
+
     if (!formData.transfermarktUrl) {
       errors.transfermarktUrl = "Transfermarkt URL is required";
     }
@@ -161,13 +163,17 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
       errors.partnerId = "Partner is required";
     }
 
+    console.log('[PlayerForm] handleSubmit - errors:', errors);
+
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
       return;
     }
 
+    console.log('[PlayerForm] handleSubmit - submitting:', formData);
     onSubmit(formData);
   };
+
 
   return (
     <div className="player-form">
@@ -321,9 +327,9 @@ const PlayerRegistrationForm: React.FC<PlayerFormProps> = ({
               <div className="partner-dropdown">
                 {filteredPartners.map((partner) => (
                   <div
-                    key={partner.id}
+                    key={partner.name}
                     className={`partner-option ${
-                      formData.partnerId === partner.id ? "selected" : ""
+                      formData.partnerId === partner.name ? "selected" : ""
                     }`}
                     onClick={() => selectPartner(partner)}
                   >

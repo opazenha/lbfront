@@ -136,7 +136,7 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify(body),
       // Add a timeout to avoid hanging requests
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(10000),
       cache: 'no-store'
     });
     
