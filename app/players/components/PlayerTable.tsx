@@ -248,6 +248,10 @@ const PlayerTable = ({ players, loading }: PlayerTableProps) => {
                               : player.nationality || ""}
                           </span>
                         </div>
+                        <div className="mobile-market-block">
+                          <span className="mobile-label">Market:</span>
+                          <span className="mobile-value">{player.marketValue}</span>
+                        </div>
                         <div className="mobile-buttons-block">
                           <span className="mobile-buttons">
                             <a

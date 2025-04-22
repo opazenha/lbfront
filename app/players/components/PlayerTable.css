@@ -557,6 +557,7 @@
 }
 .mobile-age-block,
 .mobile-citizenship-block,
+.mobile-market-block,
 .mobile-buttons-block {
   display: block;
   width: 100%;
@@ -656,4 +657,11 @@
   }
   .mobile-card-flex { display: flex !important; flex-direction: column !important; height: 100% !important; }
   .mobile-row-2 { margin-top: auto !important; }
+}
+
+/* Highlight market value in mobile cards */
+@media (max-width: 640px) {
+  .mobile-market-block .mobile-value {
+    color: #ffc107 !important;
+  }
 }
