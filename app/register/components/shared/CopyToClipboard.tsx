@@ -25,15 +25,34 @@ Club: ${player.club || "-"}
 YouTube: ${player.youtubeUrl || "-"}
 `.trim();
 
-    navigator.clipboard
-      .writeText(text)
-      .then(() => {
-        alert("Player information copied to clipboard!");
-      })
-      .catch((err) => {
-        console.error("Failed to copy text: ", err);
-        alert("Failed to copy to clipboard. Please try again.");
-      });
+    const fallbackCopy = (str: string) => {
+      const textarea = document.createElement('textarea');
+      textarea.value = str;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'absolute';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        alert('Player information copied to clipboard!');
+      } catch (err) {
+        console.error('Fallback: unable to copy', err);
+        alert('Failed to copy to clipboard. Please try again.');
+      }
+      document.body.removeChild(textarea);
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => alert('Player information copied to clipboard!'))
+        .catch(err => {
+          console.error('Clipboard API failed, falling back', err);
+          fallbackCopy(text);
+        });
+    } else {
+      fallbackCopy(text);
+    }
   };
 
   return (
